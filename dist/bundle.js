@@ -107,6 +107,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _ckeditor_ckeditor5_ui_src_button_buttonview__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! @ckeditor/ckeditor5-ui/src/button/buttonview */ "./node_modules/@ckeditor/ckeditor5-ui/src/button/buttonview.js");
 /* harmony import */ var _ckeditor_ckeditor5_inspector__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! @ckeditor/ckeditor5-inspector */ "./node_modules/@ckeditor/ckeditor5-inspector/build/inspector.js");
 /* harmony import */ var _ckeditor_ckeditor5_inspector__WEBPACK_IMPORTED_MODULE_10___default = /*#__PURE__*/__webpack_require__.n(_ckeditor_ckeditor5_inspector__WEBPACK_IMPORTED_MODULE_10__);
+/* harmony import */ var _ckeditor_ckeditor5_engine_src_dev_utils_model__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! @ckeditor/ckeditor5-engine/src/dev-utils/model */ "./node_modules/@ckeditor/ckeditor5-engine/src/dev-utils/model.js");
+/* harmony import */ var _ckeditor_ckeditor5_engine_src_dev_utils_view__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! @ckeditor/ckeditor5-engine/src/dev-utils/view */ "./node_modules/@ckeditor/ckeditor5-engine/src/dev-utils/view.js");
 // app.js
 
 
@@ -122,6 +124,9 @@ __webpack_require__.r(__webpack_exports__);
 
 // This SVG file import will be handled by webpack's raw-text loader.
 // This means that imageIcon will hold the source SVG.
+
+
+
 
 
 
@@ -168,6 +173,8 @@ _ckeditor_ckeditor5_editor_classic_src_classiceditor__WEBPACK_IMPORTED_MODULE_0_
     .then( editor => {
         console.log( 'Editor was initialized', editor );
         _ckeditor_ckeditor5_inspector__WEBPACK_IMPORTED_MODULE_10___default.a.attach( editor );
+        console.log( Object(_ckeditor_ckeditor5_engine_src_dev_utils_model__WEBPACK_IMPORTED_MODULE_11__["getData"])( editor.model ) );
+        console.log( Object(_ckeditor_ckeditor5_engine_src_dev_utils_view__WEBPACK_IMPORTED_MODULE_12__["getData"])( editor.model ) );
     } )
     .catch( error => {
         console.error( error.stack );
@@ -10724,6 +10731,1750 @@ class HtmlDataProcessor {
 
 		return fragment;
 	}
+}
+
+
+/***/ }),
+
+/***/ "./node_modules/@ckeditor/ckeditor5-engine/src/dataprocessor/xmldataprocessor.js":
+/*!***************************************************************************************!*\
+  !*** ./node_modules/@ckeditor/ckeditor5-engine/src/dataprocessor/xmldataprocessor.js ***!
+  \***************************************************************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return XmlDataProcessor; });
+/* harmony import */ var _basichtmlwriter__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./basichtmlwriter */ "./node_modules/@ckeditor/ckeditor5-engine/src/dataprocessor/basichtmlwriter.js");
+/* harmony import */ var _view_domconverter__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../view/domconverter */ "./node_modules/@ckeditor/ckeditor5-engine/src/view/domconverter.js");
+/* harmony import */ var _view_filler__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../view/filler */ "./node_modules/@ckeditor/ckeditor5-engine/src/view/filler.js");
+/**
+ * @license Copyright (c) 2003-2019, CKSource - Frederico Knabben. All rights reserved.
+ * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-oss-license
+ */
+
+/**
+ * @module engine/dataprocessor/xmldataprocessor
+ */
+
+/* globals DOMParser, document */
+
+
+
+
+
+/**
+ * The XML data processor class.
+ * This data processor implementation uses XML as input and output data.
+ * This class is needed because unlike HTML, XML allows to use any tag with any value.
+ * For example, `<link>Text</link>` is a valid XML but invalid HTML.
+ *
+ * @implements module:engine/dataprocessor/dataprocessor~DataProcessor
+ */
+class XmlDataProcessor {
+	/**
+	 * Creates a new instance of the XML data processor class.
+	 *
+	 * @param {Object} options Configuration options.
+	 * @param {Array<String>} [options.namespaces=[]] A list of namespaces allowed to use in the XML input.
+	 */
+	constructor( options = {} ) {
+		/**
+		 * A list of namespaces allowed to use in the XML input.
+		 *
+		 * For example, registering namespaces [ 'attribute', 'container' ] allows to use `<attirbute:tagName></attribute:tagName>`
+		 * and `<container:tagName></container:tagName>` input. It is mainly for debugging.
+		 *
+		 * @public
+		 * @member {DOMParser}
+		 */
+		this.namespaces = options.namespaces || [];
+
+		/**
+		 * DOM parser instance used to parse an XML string to an XML document.
+		 *
+		 * @private
+		 * @member {DOMParser}
+		 */
+		this._domParser = new DOMParser();
+
+		/**
+		 * DOM converter used to convert DOM elements to view elements.
+		 *
+		 * @private
+		 * @member {module:engine/view/domconverter~DomConverter}
+		 */
+		this._domConverter = new _view_domconverter__WEBPACK_IMPORTED_MODULE_1__["default"]( { blockFiller: _view_filler__WEBPACK_IMPORTED_MODULE_2__["NBSP_FILLER"] } );
+
+		/**
+		 * A basic HTML writer instance used to convert DOM elements to an XML string.
+		 * There is no need to use a dedicated XML writer because the basic HTML writer works well in this case.
+		 *
+		 * @private
+		 * @member {module:engine/dataprocessor/basichtmlwriter~BasicHtmlWriter}
+		 */
+		this._htmlWriter = new _basichtmlwriter__WEBPACK_IMPORTED_MODULE_0__["default"]();
+	}
+
+	/**
+	 * Converts the provided {@link module:engine/view/documentfragment~DocumentFragment document fragment}
+	 * to data format &mdash; in this case an XML string.
+	 *
+	 * @param {module:engine/view/documentfragment~DocumentFragment} viewFragment
+	 * @returns {String} An XML string.
+	 */
+	toData( viewFragment ) {
+		// Convert view DocumentFragment to DOM DocumentFragment.
+		const domFragment = this._domConverter.viewToDom( viewFragment, document );
+
+		// Convert DOM DocumentFragment to XML output.
+		// There is no need to use dedicated for XML serializing method because BasicHtmlWriter works well in this case.
+		return this._htmlWriter.getHtml( domFragment );
+	}
+
+	/**
+	 * Converts the provided XML string to a view tree.
+	 *
+	 * @param {String} data An XML string.
+	 * @returns {module:engine/view/node~Node|module:engine/view/documentfragment~DocumentFragment|null} A converted view element.
+	 */
+	toView( data ) {
+		// Convert input XML data to DOM DocumentFragment.
+		const domFragment = this._toDom( data );
+
+		// Convert DOM DocumentFragment to view DocumentFragment.
+		return this._domConverter.domToView( domFragment, { keepOriginalCase: true } );
+	}
+
+	/**
+	 * Converts an XML string to its DOM representation. Returns a document fragment containing nodes parsed from
+	 * the provided data.
+	 *
+	 * @private
+	 * @param {String} data
+	 * @returns {DocumentFragment}
+	 */
+	_toDom( data ) {
+		// Stringify namespaces.
+		const namespaces = this.namespaces.map( nsp => `xmlns:${ nsp }="nsp"` ).join( ' ' );
+
+		// Wrap data into root element with optional namespace definitions.
+		data = `<xml ${ namespaces }>${ data }</xml>`;
+
+		const parsedDocument = this._domParser.parseFromString( data, 'text/xml' );
+
+		// Parse validation.
+		const parserError = parsedDocument.querySelector( 'parsererror' );
+
+		if ( parserError ) {
+			throw new Error( 'Parse error - ' + parserError.textContent );
+		}
+
+		const fragment = parsedDocument.createDocumentFragment();
+		const nodes = parsedDocument.documentElement.childNodes;
+
+		while ( nodes.length > 0 ) {
+			fragment.appendChild( nodes[ 0 ] );
+		}
+
+		return fragment;
+	}
+}
+
+
+/***/ }),
+
+/***/ "./node_modules/@ckeditor/ckeditor5-engine/src/dev-utils/model.js":
+/*!************************************************************************!*\
+  !*** ./node_modules/@ckeditor/ckeditor5-engine/src/dev-utils/model.js ***!
+  \************************************************************************/
+/*! exports provided: getData, setData, stringify, parse */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "getData", function() { return getData; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "setData", function() { return setData; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "stringify", function() { return stringify; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "parse", function() { return parse; });
+/* harmony import */ var _model_rootelement__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../model/rootelement */ "./node_modules/@ckeditor/ckeditor5-engine/src/model/rootelement.js");
+/* harmony import */ var _model_model__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../model/model */ "./node_modules/@ckeditor/ckeditor5-engine/src/model/model.js");
+/* harmony import */ var _model_range__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../model/range */ "./node_modules/@ckeditor/ckeditor5-engine/src/model/range.js");
+/* harmony import */ var _model_position__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../model/position */ "./node_modules/@ckeditor/ckeditor5-engine/src/model/position.js");
+/* harmony import */ var _model_selection__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../model/selection */ "./node_modules/@ckeditor/ckeditor5-engine/src/model/selection.js");
+/* harmony import */ var _model_documentfragment__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../model/documentfragment */ "./node_modules/@ckeditor/ckeditor5-engine/src/model/documentfragment.js");
+/* harmony import */ var _model_documentselection__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../model/documentselection */ "./node_modules/@ckeditor/ckeditor5-engine/src/model/documentselection.js");
+/* harmony import */ var _view_view__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../view/view */ "./node_modules/@ckeditor/ckeditor5-engine/src/view/view.js");
+/* harmony import */ var _view_containerelement__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ../view/containerelement */ "./node_modules/@ckeditor/ckeditor5-engine/src/view/containerelement.js");
+/* harmony import */ var _view_rooteditableelement__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ../view/rooteditableelement */ "./node_modules/@ckeditor/ckeditor5-engine/src/view/rooteditableelement.js");
+/* harmony import */ var _src_dev_utils_view__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ../../src/dev-utils/view */ "./node_modules/@ckeditor/ckeditor5-engine/src/dev-utils/view.js");
+/* harmony import */ var _conversion_downcastdispatcher__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ../conversion/downcastdispatcher */ "./node_modules/@ckeditor/ckeditor5-engine/src/conversion/downcastdispatcher.js");
+/* harmony import */ var _conversion_upcastdispatcher__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! ../conversion/upcastdispatcher */ "./node_modules/@ckeditor/ckeditor5-engine/src/conversion/upcastdispatcher.js");
+/* harmony import */ var _conversion_mapper__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! ../conversion/mapper */ "./node_modules/@ckeditor/ckeditor5-engine/src/conversion/mapper.js");
+/* harmony import */ var _conversion_downcasthelpers__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! ../conversion/downcasthelpers */ "./node_modules/@ckeditor/ckeditor5-engine/src/conversion/downcasthelpers.js");
+/* harmony import */ var lodash_es__WEBPACK_IMPORTED_MODULE_15__ = __webpack_require__(/*! lodash-es */ "./node_modules/lodash-es/lodash.js");
+/* harmony import */ var _ckeditor_ckeditor5_utils_src_tomap__WEBPACK_IMPORTED_MODULE_16__ = __webpack_require__(/*! @ckeditor/ckeditor5-utils/src/tomap */ "./node_modules/@ckeditor/ckeditor5-utils/src/tomap.js");
+/**
+ * @license Copyright (c) 2003-2019, CKSource - Frederico Knabben. All rights reserved.
+ * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-oss-license
+ */
+
+/**
+ * @module engine/dev-utils/model
+ */
+
+/**
+ * Collection of methods for manipulating the {@link module:engine/model/model model} for testing purposes.
+ */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/**
+ * Writes the content of a model {@link module:engine/model/document~Document document} to an HTML-like string.
+ *
+ *		getData( editor.model ); // -> '<paragraph>Foo![]</paragraph>'
+ *
+ * **Note:** A {@link module:engine/model/text~Text text} node that contains attributes will be represented as:
+ *
+ *		<$text attribute="value">Text data</$text>
+ *
+ * **Note:** Using this tool in production-grade code is not recommended. It was designed for development, prototyping,
+ * debugging and testing.
+ *
+ * @param {module:engine/model/model~Model} model
+ * @param {Object} [options]
+ * @param {Boolean} [options.withoutSelection=false] Whether to write the selection. When set to `true`, the selection will
+ * not be included in the returned string.
+ * @param {String} [options.rootName='main'] The name of the root from which the data should be stringified. If not provided,
+ * the default `main` name will be used.
+ * @param {Boolean} [options.convertMarkers=false] Whether to include markers in the returned string.
+ * @returns {String} The stringified data.
+ */
+function getData( model, options = {} ) {
+	if ( !( model instanceof _model_model__WEBPACK_IMPORTED_MODULE_1__["default"] ) ) {
+		throw new TypeError( 'Model needs to be an instance of module:engine/model/model~Model.' );
+	}
+
+	const rootName = options.rootName || 'main';
+	const root = model.document.getRoot( rootName );
+
+	return getData._stringify(
+		root,
+		options.withoutSelection ? null : model.document.selection,
+		options.convertMarkers ? model.markers : null
+	);
+}
+
+// Set stringify as getData private method - needed for testing/spying.
+getData._stringify = stringify;
+
+/**
+ * Sets the content of a model {@link module:engine/model/document~Document document} provided as an HTML-like string.
+ *
+ *		setData( editor.model, '<paragraph>Foo![]</paragraph>' );
+ *
+ * **Note:** Remember to register elements in the {@link module:engine/model/model~Model#schema model's schema} before
+ * trying to use them.
+ *
+ * **Note:** To create a {@link module:engine/model/text~Text text} node that contains attributes use:
+ *
+ *		<$text attribute="value">Text data</$text>
+ *
+ * **Note:** Using this tool in production-grade code is not recommended. It was designed for development, prototyping,
+ * debugging and testing.
+ *
+ * @param {module:engine/model/model~Model} model
+ * @param {String} data HTML-like string to write into the document.
+ * @param {Object} options
+ * @param {String} [options.rootName='main'] Root name where parsed data will be stored. If not provided, the default `main`
+ * name will be used.
+ * @param {Array<Object>} [options.selectionAttributes] A list of attributes which will be passed to the selection.
+ * @param {Boolean} [options.lastRangeBackward=false] If set to `true`, the last range will be added as backward.
+ * @param {String} [options.batchType='transparent'] Batch type used for inserting elements.
+ * See {@link module:engine/model/batch~Batch#type}.
+ */
+function setData( model, data, options = {} ) {
+	if ( !( model instanceof _model_model__WEBPACK_IMPORTED_MODULE_1__["default"] ) ) {
+		throw new TypeError( 'Model needs to be an instance of module:engine/model/model~Model.' );
+	}
+
+	let modelDocumentFragment, selection;
+	const modelRoot = model.document.getRoot( options.rootName || 'main' );
+
+	// Parse data string to model.
+	const parsedResult = setData._parse( data, model.schema, {
+		lastRangeBackward: options.lastRangeBackward,
+		selectionAttributes: options.selectionAttributes,
+		context: [ modelRoot.name ]
+	} );
+
+	// Retrieve DocumentFragment and Selection from parsed model.
+	if ( parsedResult.model ) {
+		modelDocumentFragment = parsedResult.model;
+		selection = parsedResult.selection;
+	} else {
+		modelDocumentFragment = parsedResult;
+	}
+
+	model.change( writer => {
+		// Replace existing model in document by new one.
+		writer.remove( writer.createRangeIn( modelRoot ) );
+		writer.insert( modelDocumentFragment, modelRoot );
+
+		// Clean up previous document selection.
+		writer.setSelection( null );
+		writer.removeSelectionAttribute( model.document.selection.getAttributeKeys() );
+
+		// Update document selection if specified.
+		if ( selection ) {
+			const ranges = [];
+
+			for ( const range of selection.getRanges() ) {
+				const start = new _model_position__WEBPACK_IMPORTED_MODULE_3__["default"]( modelRoot, range.start.path );
+				const end = new _model_position__WEBPACK_IMPORTED_MODULE_3__["default"]( modelRoot, range.end.path );
+
+				ranges.push( new _model_range__WEBPACK_IMPORTED_MODULE_2__["default"]( start, end ) );
+			}
+
+			writer.setSelection( ranges, { backward: selection.isBackward } );
+
+			if ( options.selectionAttributes ) {
+				writer.setSelectionAttribute( selection.getAttributes() );
+			}
+		}
+	} );
+}
+
+// Set parse as setData private method - needed for testing/spying.
+setData._parse = parse;
+
+/**
+ * Converts model nodes to HTML-like string representation.
+ *
+ * **Note:** A {@link module:engine/model/text~Text text} node that contains attributes will be represented as:
+ *
+ *		<$text attribute="value">Text data</$text>
+ *
+ * @param {module:engine/model/rootelement~RootElement|module:engine/model/element~Element|module:engine/model/text~Text|
+ * module:engine/model/documentfragment~DocumentFragment} node A node to stringify.
+ * @param {module:engine/model/selection~Selection|module:engine/model/position~Position|
+ * module:engine/model/range~Range} [selectionOrPositionOrRange=null]
+ * A selection instance whose ranges will be included in the returned string data. If a range instance is provided, it will be
+ * converted to a selection containing this range. If a position instance is provided, it will be converted to a selection
+ * containing one range collapsed at this position.
+ * @param {Iterable.<module:engine/model/markercollection~Marker>|null} markers Markers to include.
+ * @returns {String} An HTML-like string representing the model.
+ */
+function stringify( node, selectionOrPositionOrRange = null, markers = null ) {
+	const model = new _model_model__WEBPACK_IMPORTED_MODULE_1__["default"]();
+	const mapper = new _conversion_mapper__WEBPACK_IMPORTED_MODULE_13__["default"]();
+	let selection, range;
+
+	// Create a range witch wraps passed node.
+	if ( node instanceof _model_rootelement__WEBPACK_IMPORTED_MODULE_0__["default"] || node instanceof _model_documentfragment__WEBPACK_IMPORTED_MODULE_5__["default"] ) {
+		range = model.createRangeIn( node );
+	} else {
+		// Node is detached - create new document fragment.
+		if ( !node.parent ) {
+			const fragment = new _model_documentfragment__WEBPACK_IMPORTED_MODULE_5__["default"]( node );
+			range = model.createRangeIn( fragment );
+		} else {
+			range = new _model_range__WEBPACK_IMPORTED_MODULE_2__["default"](
+				model.createPositionBefore( node ),
+				model.createPositionAfter( node )
+			);
+		}
+	}
+
+	// Get selection from passed selection or position or range if at least one is specified.
+	if ( selectionOrPositionOrRange instanceof _model_selection__WEBPACK_IMPORTED_MODULE_4__["default"] ) {
+		selection = selectionOrPositionOrRange;
+	} else if ( selectionOrPositionOrRange instanceof _model_documentselection__WEBPACK_IMPORTED_MODULE_6__["default"] ) {
+		selection = selectionOrPositionOrRange;
+	} else if ( selectionOrPositionOrRange instanceof _model_range__WEBPACK_IMPORTED_MODULE_2__["default"] ) {
+		selection = new _model_selection__WEBPACK_IMPORTED_MODULE_4__["default"]( selectionOrPositionOrRange );
+	} else if ( selectionOrPositionOrRange instanceof _model_position__WEBPACK_IMPORTED_MODULE_3__["default"] ) {
+		selection = new _model_selection__WEBPACK_IMPORTED_MODULE_4__["default"]( selectionOrPositionOrRange );
+	}
+
+	// Set up conversion.
+	// Create a temporary view controller.
+	const view = new _view_view__WEBPACK_IMPORTED_MODULE_7__["default"]();
+	const viewDocument = view.document;
+	const viewRoot = new _view_rooteditableelement__WEBPACK_IMPORTED_MODULE_9__["default"]( 'div' );
+
+	// Create a temporary root element in view document.
+	viewRoot._document = view.document;
+	viewRoot.rootName = 'main';
+	viewDocument.roots.add( viewRoot );
+
+	// Create and setup downcast dispatcher.
+	const downcastDispatcher = new _conversion_downcastdispatcher__WEBPACK_IMPORTED_MODULE_11__["default"]( { mapper } );
+
+	// Bind root elements.
+	mapper.bindElements( node.root, viewRoot );
+
+	downcastDispatcher.on( 'insert:$text', Object(_conversion_downcasthelpers__WEBPACK_IMPORTED_MODULE_14__["insertText"])() );
+	downcastDispatcher.on( 'attribute', ( evt, data, conversionApi ) => {
+		if ( data.item instanceof _model_selection__WEBPACK_IMPORTED_MODULE_4__["default"] || data.item instanceof _model_documentselection__WEBPACK_IMPORTED_MODULE_6__["default"] || data.item.is( 'textProxy' ) ) {
+			const converter = Object(_conversion_downcasthelpers__WEBPACK_IMPORTED_MODULE_14__["wrap"])( ( modelAttributeValue, viewWriter ) => {
+				return viewWriter.createAttributeElement(
+					'model-text-with-attributes',
+					{ [ data.attributeKey ]: stringifyAttributeValue( modelAttributeValue ) }
+				);
+			} );
+
+			converter( evt, data, conversionApi );
+		}
+	} );
+	downcastDispatcher.on( 'insert', Object(_conversion_downcasthelpers__WEBPACK_IMPORTED_MODULE_14__["insertElement"])( modelItem => {
+		// Stringify object types values for properly display as an output string.
+		const attributes = convertAttributes( modelItem.getAttributes(), stringifyAttributeValue );
+
+		return new _view_containerelement__WEBPACK_IMPORTED_MODULE_8__["default"]( modelItem.name, attributes );
+	} ) );
+
+	downcastDispatcher.on( 'selection', Object(_conversion_downcasthelpers__WEBPACK_IMPORTED_MODULE_14__["convertRangeSelection"])() );
+	downcastDispatcher.on( 'selection', Object(_conversion_downcasthelpers__WEBPACK_IMPORTED_MODULE_14__["convertCollapsedSelection"])() );
+	downcastDispatcher.on( 'addMarker', Object(_conversion_downcasthelpers__WEBPACK_IMPORTED_MODULE_14__["insertUIElement"])( ( data, writer ) => {
+		const name = data.markerName + ':' + ( data.isOpening ? 'start' : 'end' );
+
+		return writer.createUIElement( name );
+	} ) );
+
+	// Convert model to view.
+	const writer = view._writer;
+	downcastDispatcher.convertInsert( range, writer );
+
+	// Convert model selection to view selection.
+	if ( selection ) {
+		downcastDispatcher.convertSelection( selection, markers || model.markers, writer );
+	}
+
+	if ( markers ) {
+		// To provide stable results, sort markers by name.
+		markers = Array.from( markers ).sort( ( a, b ) => a.name < b.name ? 1 : -1 );
+
+		for ( const marker of markers ) {
+			downcastDispatcher.convertMarkerAdd( marker.name, marker.getRange(), writer );
+		}
+	}
+
+	// Parse view to data string.
+	let data = Object(_src_dev_utils_view__WEBPACK_IMPORTED_MODULE_10__["stringify"])( viewRoot, viewDocument.selection, { sameSelectionCharacters: true } );
+
+	// Removing unneccessary <div> and </div> added because `viewRoot` was also stringified alongside input data.
+	data = data.substr( 5, data.length - 11 );
+
+	view.destroy();
+
+	// Replace valid XML `model-text-with-attributes` element name to `$text`.
+	return data.replace( new RegExp( 'model-text-with-attributes', 'g' ), '$text' );
+}
+
+/**
+ * Parses an HTML-like string and returns the model {@link module:engine/model/rootelement~RootElement rootElement}.
+ *
+ * **Note:** To create a {@link module:engine/model/text~Text text} node that contains attributes use:
+ *
+ *		<$text attribute="value">Text data</$text>
+ *
+ * @param {String} data HTML-like string to be parsed.
+ * @param {module:engine/model/schema~Schema} schema A schema instance used by converters for element validation.
+ * @param {Object} [options={}] Additional configuration.
+ * @param {Array<Object>} [options.selectionAttributes] A list of attributes which will be passed to the selection.
+ * @param {Boolean} [options.lastRangeBackward=false] If set to `true`, the last range will be added as backward.
+ * @param {module:engine/model/schema~SchemaContextDefinition} [options.context='$root'] The conversion context.
+ * If not provided, the default `'$root'` will be used.
+ * @returns {module:engine/model/element~Element|module:engine/model/text~Text|
+ * module:engine/model/documentfragment~DocumentFragment|Object} Returns the parsed model node or
+ * an object with two fields: `model` and `selection`, when selection ranges were included in the data to parse.
+ */
+function parse( data, schema, options = {} ) {
+	const mapper = new _conversion_mapper__WEBPACK_IMPORTED_MODULE_13__["default"]();
+
+	// Replace not accepted by XML `$text` tag name by valid one `model-text-with-attributes`.
+	data = data.replace( new RegExp( '\\$text', 'g' ), 'model-text-with-attributes' );
+
+	// Parse data to view using view utils.
+	const parsedResult = Object(_src_dev_utils_view__WEBPACK_IMPORTED_MODULE_10__["parse"])( data, {
+		sameSelectionCharacters: true,
+		lastRangeBackward: !!options.lastRangeBackward
+	} );
+
+	// Retrieve DocumentFragment and Selection from parsed view.
+	let viewDocumentFragment, viewSelection, selection;
+
+	if ( parsedResult.view && parsedResult.selection ) {
+		viewDocumentFragment = parsedResult.view;
+		viewSelection = parsedResult.selection;
+	} else {
+		viewDocumentFragment = parsedResult;
+	}
+
+	// Set up upcast dispatcher.
+	const modelController = new _model_model__WEBPACK_IMPORTED_MODULE_1__["default"]();
+	const upcastDispatcher = new _conversion_upcastdispatcher__WEBPACK_IMPORTED_MODULE_12__["default"]( { schema, mapper } );
+
+	upcastDispatcher.on( 'documentFragment', convertToModelFragment() );
+	upcastDispatcher.on( 'element:model-text-with-attributes', convertToModelText( true ) );
+	upcastDispatcher.on( 'element', convertToModelElement() );
+	upcastDispatcher.on( 'text', convertToModelText() );
+
+	upcastDispatcher.isDebug = true;
+
+	// Convert view to model.
+	let model = modelController.change(
+		writer => upcastDispatcher.convert( viewDocumentFragment.root, writer, options.context || '$root' )
+	);
+
+	mapper.bindElements( model, viewDocumentFragment.root );
+
+	// If root DocumentFragment contains only one element - return that element.
+	if ( model.childCount == 1 ) {
+		model = model.getChild( 0 );
+	}
+
+	// Convert view selection to model selection.
+
+	if ( viewSelection ) {
+		const ranges = [];
+
+		// Convert ranges.
+		for ( const viewRange of viewSelection.getRanges() ) {
+			ranges.push( mapper.toModelRange( viewRange ) );
+		}
+
+		// Create new selection.
+		selection = new _model_selection__WEBPACK_IMPORTED_MODULE_4__["default"]( ranges, { backward: viewSelection.isBackward } );
+
+		// Set attributes to selection if specified.
+		for ( const [ key, value ] of Object(_ckeditor_ckeditor5_utils_src_tomap__WEBPACK_IMPORTED_MODULE_16__["default"])( options.selectionAttributes || [] ) ) {
+			selection.setAttribute( key, value );
+		}
+	}
+
+	// Return model end selection when selection was specified.
+	if ( selection ) {
+		return { model, selection };
+	}
+
+	// Otherwise return model only.
+	return model;
+}
+
+// -- Converters view -> model -----------------------------------------------------
+
+function convertToModelFragment() {
+	return ( evt, data, conversionApi ) => {
+		const childrenResult = conversionApi.convertChildren( data.viewItem, data.modelCursor );
+
+		conversionApi.mapper.bindElements( data.modelCursor.parent, data.viewItem );
+
+		data = Object.assign( data, childrenResult );
+
+		evt.stop();
+	};
+}
+
+function convertToModelElement() {
+	return ( evt, data, conversionApi ) => {
+		const elementName = data.viewItem.name;
+
+		if ( !conversionApi.schema.checkChild( data.modelCursor, elementName ) ) {
+			throw new Error( `Element '${ elementName }' was not allowed in given position.` );
+		}
+
+		// View attribute value is a string so we want to typecast it to the original type.
+		// E.g. `bold="true"` - value will be parsed from string `"true"` to boolean `true`.
+		const attributes = convertAttributes( data.viewItem.getAttributes(), parseAttributeValue );
+		const element = conversionApi.writer.createElement( data.viewItem.name, attributes );
+
+		conversionApi.writer.insert( element, data.modelCursor );
+
+		conversionApi.mapper.bindElements( element, data.viewItem );
+
+		conversionApi.convertChildren( data.viewItem, _model_position__WEBPACK_IMPORTED_MODULE_3__["default"]._createAt( element, 0 ) );
+
+		data.modelRange = _model_range__WEBPACK_IMPORTED_MODULE_2__["default"]._createOn( element );
+		data.modelCursor = data.modelRange.end;
+
+		evt.stop();
+	};
+}
+
+function convertToModelText( withAttributes = false ) {
+	return ( evt, data, conversionApi ) => {
+		if ( !conversionApi.schema.checkChild( data.modelCursor, '$text' ) ) {
+			throw new Error( 'Text was not allowed in given position.' );
+		}
+
+		let node;
+
+		if ( withAttributes ) {
+			// View attribute value is a string so we want to typecast it to the original type.
+			// E.g. `bold="true"` - value will be parsed from string `"true"` to boolean `true`.
+			const attributes = convertAttributes( data.viewItem.getAttributes(), parseAttributeValue );
+
+			node = conversionApi.writer.createText( data.viewItem.getChild( 0 ).data, attributes );
+		} else {
+			node = conversionApi.writer.createText( data.viewItem.data );
+		}
+
+		conversionApi.writer.insert( node, data.modelCursor );
+
+		data.modelRange = _model_range__WEBPACK_IMPORTED_MODULE_2__["default"]._createFromPositionAndShift( data.modelCursor, node.offsetSize );
+		data.modelCursor = data.modelRange.end;
+
+		evt.stop();
+	};
+}
+
+// Tries to get original type of attribute value using JSON parsing:
+//
+//		`'true'` => `true`
+//		`'1'` => `1`
+//		`'{"x":1,"y":2}'` => `{ x: 1, y: 2 }`
+//
+// Parse error means that value should be a string:
+//
+//		`'foobar'` => `'foobar'`
+function parseAttributeValue( attribute ) {
+	try {
+		return JSON.parse( attribute );
+	} catch ( e ) {
+		return attribute;
+	}
+}
+
+// When value is an Object stringify it.
+function stringifyAttributeValue( data ) {
+	if ( Object(lodash_es__WEBPACK_IMPORTED_MODULE_15__["isPlainObject"])( data ) ) {
+		return JSON.stringify( data );
+	}
+
+	return data;
+}
+
+// Loop trough attributes map and converts each value by passed converter.
+function* convertAttributes( attributes, converter ) {
+	for ( const [ key, value ] of attributes ) {
+		yield [ key, converter( value ) ];
+	}
+}
+
+
+/***/ }),
+
+/***/ "./node_modules/@ckeditor/ckeditor5-engine/src/dev-utils/view.js":
+/*!***********************************************************************!*\
+  !*** ./node_modules/@ckeditor/ckeditor5-engine/src/dev-utils/view.js ***!
+  \***********************************************************************/
+/*! exports provided: getData, setData, stringify, parse */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "getData", function() { return getData; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "setData", function() { return setData; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "stringify", function() { return stringify; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "parse", function() { return parse; });
+/* harmony import */ var _view_view__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../view/view */ "./node_modules/@ckeditor/ckeditor5-engine/src/view/view.js");
+/* harmony import */ var _view_documentfragment__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../view/documentfragment */ "./node_modules/@ckeditor/ckeditor5-engine/src/view/documentfragment.js");
+/* harmony import */ var _dataprocessor_xmldataprocessor__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../dataprocessor/xmldataprocessor */ "./node_modules/@ckeditor/ckeditor5-engine/src/dataprocessor/xmldataprocessor.js");
+/* harmony import */ var _view_element__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../view/element */ "./node_modules/@ckeditor/ckeditor5-engine/src/view/element.js");
+/* harmony import */ var _view_documentselection__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../view/documentselection */ "./node_modules/@ckeditor/ckeditor5-engine/src/view/documentselection.js");
+/* harmony import */ var _view_range__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../view/range */ "./node_modules/@ckeditor/ckeditor5-engine/src/view/range.js");
+/* harmony import */ var _view_position__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../view/position */ "./node_modules/@ckeditor/ckeditor5-engine/src/view/position.js");
+/* harmony import */ var _view_attributeelement__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../view/attributeelement */ "./node_modules/@ckeditor/ckeditor5-engine/src/view/attributeelement.js");
+/* harmony import */ var _view_containerelement__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ../view/containerelement */ "./node_modules/@ckeditor/ckeditor5-engine/src/view/containerelement.js");
+/* harmony import */ var _view_emptyelement__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ../view/emptyelement */ "./node_modules/@ckeditor/ckeditor5-engine/src/view/emptyelement.js");
+/* harmony import */ var _view_uielement__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ../view/uielement */ "./node_modules/@ckeditor/ckeditor5-engine/src/view/uielement.js");
+/**
+ * @license Copyright (c) 2003-2019, CKSource - Frederico Knabben. All rights reserved.
+ * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-oss-license
+ */
+
+/**
+ * @module engine/dev-utils/view
+ */
+
+/* globals document */
+
+/**
+ * Collection of methods for manipulating the {@link module:engine/view/view view} for testing purposes.
+ */
+
+
+
+
+
+
+
+
+
+
+
+
+
+const ELEMENT_RANGE_START_TOKEN = '[';
+const ELEMENT_RANGE_END_TOKEN = ']';
+const TEXT_RANGE_START_TOKEN = '{';
+const TEXT_RANGE_END_TOKEN = '}';
+const allowedTypes = {
+	'container': _view_containerelement__WEBPACK_IMPORTED_MODULE_8__["default"],
+	'attribute': _view_attributeelement__WEBPACK_IMPORTED_MODULE_7__["default"],
+	'empty': _view_emptyelement__WEBPACK_IMPORTED_MODULE_9__["default"],
+	'ui': _view_uielement__WEBPACK_IMPORTED_MODULE_10__["default"]
+};
+
+/**
+ * Writes the content of the {@link module:engine/view/document~Document document} to an HTML-like string.
+ *
+ * @param {module:engine/view/view~View} view
+ * @param {Object} [options]
+ * @param {Boolean} [options.withoutSelection=false] Whether to write the selection. When set to `true`, the selection will
+ * not be included in the returned string.
+ * @param {Boolean} [options.rootName='main'] The name of the root from which the data should be stringified. If not provided,
+ * the default `main` name will be used.
+ * @param {Boolean} [options.showType=false] When set to `true`, the type of elements will be printed (`<container:p>`
+ * instead of `<p>`, `<attribute:b>` instead of `<b>` and `<empty:img>` instead of `<img>`).
+ * @param {Boolean} [options.showPriority=false] When set to `true`, attribute element's priority will be printed
+ * (`<span view-priority="12">`, `<b view-priority="10">`).
+ * @param {Boolean} [options.showAttributeElementId=false] When set to `true`, attribute element's id will be printed
+ * (`<span id="marker:foo">`).
+ * @param {Boolean} [options.renderUIElements=false] When set to `true`, the inner content of each
+ * {@link module:engine/view/uielement~UIElement} will be printed.
+ * @returns {String} The stringified data.
+ */
+function getData( view, options = {} ) {
+	if ( !( view instanceof _view_view__WEBPACK_IMPORTED_MODULE_0__["default"] ) ) {
+		throw new TypeError( 'View needs to be an instance of module:engine/view/view~View.' );
+	}
+
+	const document = view.document;
+	const withoutSelection = !!options.withoutSelection;
+	const rootName = options.rootName || 'main';
+	const root = document.getRoot( rootName );
+	const stringifyOptions = {
+		showType: options.showType,
+		showPriority: options.showPriority,
+		renderUIElements: options.renderUIElements,
+		ignoreRoot: true
+	};
+
+	return withoutSelection ?
+		getData._stringify( root, null, stringifyOptions ) :
+		getData._stringify( root, document.selection, stringifyOptions );
+}
+
+// Set stringify as getData private method - needed for testing/spying.
+getData._stringify = stringify;
+
+/**
+ * Sets the content of a view {@link module:engine/view/document~Document document} provided as an HTML-like string.
+ *
+ * @param {module:engine/view/view~View} view
+ * @param {String} data An HTML-like string to write into the document.
+ * @param {Object} options
+ * @param {String} [options.rootName='main'] The root name where parsed data will be stored. If not provided,
+ * the default `main` name will be used.
+ */
+function setData( view, data, options = {} ) {
+	if ( !( view instanceof _view_view__WEBPACK_IMPORTED_MODULE_0__["default"] ) ) {
+		throw new TypeError( 'View needs to be an instance of module:engine/view/view~View.' );
+	}
+
+	const document = view.document;
+	const rootName = options.rootName || 'main';
+	const root = document.getRoot( rootName );
+
+	view.change( writer => {
+		const result = setData._parse( data, { rootElement: root } );
+
+		if ( result.view && result.selection ) {
+			writer.setSelection( result.selection );
+		}
+	} );
+}
+
+// Set parse as setData private method - needed for testing/spying.
+setData._parse = parse;
+
+/**
+ * Converts view elements to HTML-like string representation.
+ *
+ * A root element can be provided as {@link module:engine/view/text~Text text}:
+ *
+ *		const text = downcastWriter.createText( 'foobar' );
+ *		stringify( text ); // 'foobar'
+ *
+ * or as an {@link module:engine/view/element~Element element}:
+ *
+ *		const element = downcastWriter.createElement( 'p', null, downcastWriter.createText( 'foobar' ) );
+ *		stringify( element ); // '<p>foobar</p>'
+ *
+ * or as a {@link module:engine/view/documentfragment~DocumentFragment document fragment}:
+ *
+ *		const text = downcastWriter.createText( 'foobar' );
+ *		const b = downcastWriter.createElement( 'b', { name: 'test' }, text );
+ *		const p = downcastWriter.createElement( 'p', { style: 'color:red;' } );
+ *		const fragment = downcastWriter.createDocumentFragment( [ p, b ] );
+ *
+ *		stringify( fragment ); // '<p style="color:red;"></p><b name="test">foobar</b>'
+ *
+ * Additionally, a {@link module:engine/view/documentselection~DocumentSelection selection} instance can be provided.
+ * Ranges from the selection will then be included in the output data.
+ * If a range position is placed inside the element node, it will be represented with `[` and `]`:
+ *
+ *		const text = downcastWriter.createText( 'foobar' );
+ *		const b = downcastWriter.createElement( 'b', null, text );
+ *		const p = downcastWriter.createElement( 'p', null, b );
+ *		const selection = downcastWriter.createSelection(
+ *			downcastWriter.createRangeIn( p )
+ *		);
+ *
+ *		stringify( p, selection ); // '<p>[<b>foobar</b>]</p>'
+ *
+ * If a range is placed inside the text node, it will be represented with `{` and `}`:
+ *
+ *		const text = downcastWriter.createText( 'foobar' );
+ *		const b = downcastWriter.createElement( 'b', null, text );
+ *		const p = downcastWriter.createElement( 'p', null, b );
+ *		const selection = downcastWriter.createSelection(
+ *			downcastWriter.createRange( downcastWriter.createPositionAt( text, 1 ), downcastWriter.createPositionAt( text, 5 ) )
+ *		);
+ *
+ *		stringify( p, selection ); // '<p><b>f{ooba}r</b></p>'
+ *
+ * ** Note: **
+ * It is possible to unify selection markers to `[` and `]` for both (inside and outside text)
+ * by setting the `sameSelectionCharacters=true` option. It is mainly used when the view stringify option is used by
+ * model utilities.
+ *
+ * Multiple ranges are supported:
+ *
+ *		const text = downcastWriter.createText( 'foobar' );
+ *		const selection = downcastWriter.createSelection( [
+ *			downcastWriter.createRange( downcastWriter.createPositionAt( text, 0 ), downcastWriter.createPositionAt( text, 1 ) ),
+ *			downcastWriter.createRange( downcastWriter.createPositionAt( text, 3 ), downcastWriter.createPositionAt( text, 5 ) )
+ *		] );
+ *
+ *		stringify( text, selection ); // '{f}oo{ba}r'
+ *
+ * A {@link module:engine/view/range~Range range} or {@link module:engine/view/position~Position position} instance can be provided
+ * instead of the {@link module:engine/view/documentselection~DocumentSelection selection} instance. If a range instance
+ * is provided, it will be converted to a selection containing this range. If a position instance is provided, it will
+ * be converted to a selection containing one range collapsed at this position.
+ *
+ *		const text = downcastWriter.createText( 'foobar' );
+ *		const range = downcastWriter.createRange( downcastWriter.createPositionAt( text, 0 ), downcastWriter.createPositionAt( text, 1 ) );
+ *		const position = downcastWriter.createPositionAt( text, 3 );
+ *
+ *		stringify( text, range ); // '{f}oobar'
+ *		stringify( text, position ); // 'foo{}bar'
+ *
+ * An additional `options` object can be provided.
+ * If `options.showType` is set to `true`, element's types will be
+ * presented for {@link module:engine/view/attributeelement~AttributeElement attribute elements},
+ * {@link module:engine/view/containerelement~ContainerElement container elements}
+ * {@link module:engine/view/emptyelement~EmptyElement empty elements}
+ * and {@link module:engine/view/uielement~UIElement UI elements}:
+ *
+ *		const attribute = downcastWriter.createAttributeElement( 'b' );
+ *		const container = downcastWriter.createContainerElement( 'p' );
+ *		const empty = downcastWriter.createEmptyElement( 'img' );
+ *		const ui = downcastWriter.createUIElement( 'span' );
+ *		getData( attribute, null, { showType: true } ); // '<attribute:b></attribute:b>'
+ *		getData( container, null, { showType: true } ); // '<container:p></container:p>'
+ *		getData( empty, null, { showType: true } ); // '<empty:img></empty:img>'
+ *		getData( ui, null, { showType: true } ); // '<ui:span></ui:span>'
+ *
+ * If `options.showPriority` is set to `true`, a priority will be displayed for all
+ * {@link module:engine/view/attributeelement~AttributeElement attribute elements}.
+ *
+ *		const attribute = downcastWriter.createAttributeElement( 'b' );
+ *		attribute._priority = 20;
+ *		getData( attribute, null, { showPriority: true } ); // <b view-priority="20"></b>
+ *
+ * If `options.showAttributeElementId` is set to `true`, the attribute element's id will be displayed for all
+ * {@link module:engine/view/attributeelement~AttributeElement attribute elements} that have it set.
+ *
+ *		const attribute = downcastWriter.createAttributeElement( 'span' );
+ *		attribute._id = 'marker:foo';
+ *		getData( attribute, null, { showAttributeElementId: true } ); // <span view-id="marker:foo"></span>
+ *
+ * @param {module:engine/view/text~Text|module:engine/view/element~Element|module:engine/view/documentfragment~DocumentFragment}
+ * node The node to stringify.
+ * @param {module:engine/view/documentselection~DocumentSelection|module:engine/view/position~Position|module:engine/view/range~Range}
+ * [selectionOrPositionOrRange = null ]
+ * A selection instance whose ranges will be included in the returned string data. If a range instance is provided, it will be
+ * converted to a selection containing this range. If a position instance is provided, it will be converted to a selection
+ * containing one range collapsed at this position.
+ * @param {Object} [options] An object with additional options.
+ * @param {Boolean} [options.showType=false] When set to `true`, the type of elements will be printed (`<container:p>`
+ * instead of `<p>`, `<attribute:b>` instead of `<b>` and `<empty:img>` instead of `<img>`).
+ * @param {Boolean} [options.showPriority=false] When set to `true`,  the attribute element's priority will be printed
+ * (`<span view-priority="12">`, `<b view-priority="10">`).
+ * @param {Boolean} [options.showAttributeElementId=false] When set to `true`, attribute element's id will be printed
+ * (`<span id="marker:foo">`).
+ * @param {Boolean} [options.ignoreRoot=false] When set to `true`, the root's element opening and closing will not be printed.
+ * Mainly used by the `getData` function to ignore the {@link module:engine/view/document~Document document's} root element.
+ * @param {Boolean} [options.sameSelectionCharacters=false] When set to `true`, the selection inside the text will be marked as
+ *  `{` and `}` and the selection outside the text as `[` and `]`. When set to `false`, both will be marked as `[` and `]` only.
+ * @param {Boolean} [options.renderUIElements=false] When set to `true`, the inner content of each
+ * {@link module:engine/view/uielement~UIElement} will be printed.
+ * @returns {String} An HTML-like string representing the view.
+ */
+function stringify( node, selectionOrPositionOrRange = null, options = {} ) {
+	let selection;
+
+	if (
+		selectionOrPositionOrRange instanceof _view_position__WEBPACK_IMPORTED_MODULE_6__["default"] ||
+		selectionOrPositionOrRange instanceof _view_range__WEBPACK_IMPORTED_MODULE_5__["default"]
+	) {
+		selection = new _view_documentselection__WEBPACK_IMPORTED_MODULE_4__["default"]( selectionOrPositionOrRange );
+	} else {
+		selection = selectionOrPositionOrRange;
+	}
+
+	const viewStringify = new ViewStringify( node, selection, options );
+
+	return viewStringify.stringify();
+}
+
+/**
+ * Parses an HTML-like string and returns a view tree.
+ * A simple string will be converted to a {@link module:engine/view/text~Text text} node:
+ *
+ *		parse( 'foobar' ); // Returns an instance of text.
+ *
+ * {@link module:engine/view/element~Element Elements} will be parsed with attributes as children:
+ *
+ *		parse( '<b name="baz">foobar</b>' ); // Returns an instance of element with the `baz` attribute and a text child node.
+ *
+ * Multiple nodes provided on root level will be converted to a
+ * {@link module:engine/view/documentfragment~DocumentFragment document fragment}:
+ *
+ *		parse( '<b>foo</b><i>bar</i>' ); // Returns a document fragment with two child elements.
+ *
+ * The method can parse multiple {@link module:engine/view/range~Range ranges} provided in string data and return a
+ * {@link module:engine/view/documentselection~DocumentSelection selection} instance containing these ranges. Ranges placed inside
+ * {@link module:engine/view/text~Text text} nodes should be marked using `{` and `}` brackets:
+ *
+ *		const { text, selection } = parse( 'f{ooba}r' );
+ *
+ * Ranges placed outside text nodes should be marked using `[` and `]` brackets:
+ *
+ *		const { root, selection } = parse( '<p>[<b>foobar</b>]</p>' );
+ *
+ * ** Note: **
+ * It is possible to unify selection markers to `[` and `]` for both (inside and outside text)
+ * by setting `sameSelectionCharacters=true` option. It is mainly used when the view parse option is used by model utilities.
+ *
+ * Sometimes there is a need for defining the order of ranges inside the created selection. This can be achieved by providing
+ * the range order array as an additional parameter:
+ *
+ *		const { root, selection } = parse( '{fo}ob{ar}{ba}z', { order: [ 2, 3, 1 ] } );
+ *
+ * In the example above, the first range (`{fo}`) will be added to the selection as the second one, the second range (`{ar}`) will be
+ * added as the third and the third range (`{ba}`) will be added as the first one.
+ *
+ * If the selection's last range should be added as a backward one
+ * (so the {@link module:engine/view/documentselection~DocumentSelection#anchor selection anchor} is represented
+ * by the `end` position and {@link module:engine/view/documentselection~DocumentSelection#focus selection focus} is
+ * represented by the `start` position), use the `lastRangeBackward` flag:
+ *
+ *		const { root, selection } = parse( `{foo}bar{baz}`, { lastRangeBackward: true } );
+ *
+ * Some more examples and edge cases:
+ *
+ *		// Returns an empty document fragment.
+ *		parse( '' );
+ *
+ *		// Returns an empty document fragment and a collapsed selection.
+ *		const { root, selection } = parse( '[]' );
+ *
+ *		// Returns an element and a selection that is placed inside the document fragment containing that element.
+ *		const { root, selection } = parse( '[<a></a>]' );
+ *
+ * @param {String} data An HTML-like string to be parsed.
+ * @param {Object} options
+ * @param {Array.<Number>} [options.order] An array with the order of parsed ranges added to the returned
+ * {@link module:engine/view/documentselection~DocumentSelection Selection} instance. Each element should represent the
+ * desired position of each range in the selection instance. For example: `[2, 3, 1]` means that the first range will be
+ * placed as the second, the second as the third and the third as the first.
+ * @param {Boolean} [options.lastRangeBackward=false] If set to `true`, the last range will be added as backward to the returned
+ * {@link module:engine/view/documentselection~DocumentSelection selection} instance.
+ * @param {module:engine/view/element~Element|module:engine/view/documentfragment~DocumentFragment}
+ * [options.rootElement=null] The default root to use when parsing elements.
+ * When set to `null`, the root element will be created automatically. If set to
+ * {@link module:engine/view/element~Element Element} or {@link module:engine/view/documentfragment~DocumentFragment DocumentFragment},
+ * this node will be used as the root for all parsed nodes.
+ * @param {Boolean} [options.sameSelectionCharacters=false] When set to `false`, the selection inside the text should be marked using
+ * `{` and `}` and the selection outside the ext using `[` and `]`. When set to `true`, both should be marked with `[` and `]` only.
+ * @returns {module:engine/view/text~Text|module:engine/view/element~Element|module:engine/view/documentfragment~DocumentFragment|Object}
+ * Returns the parsed view node or an object with two fields: `view` and `selection` when selection ranges were included in the data
+ * to parse.
+ */
+function parse( data, options = {} ) {
+	options.order = options.order || [];
+	const rangeParser = new RangeParser( {
+		sameSelectionCharacters: options.sameSelectionCharacters
+	} );
+	const processor = new _dataprocessor_xmldataprocessor__WEBPACK_IMPORTED_MODULE_2__["default"]( {
+		namespaces: Object.keys( allowedTypes )
+	} );
+
+	// Convert data to view.
+	let view = processor.toView( data );
+
+	// At this point we have a view tree with Elements that could have names like `attribute:b:1`. In the next step
+	// we need to parse Element's names and convert them to AttributeElements and ContainerElements.
+	view = _convertViewElements( view );
+
+	// If custom root is provided - move all nodes there.
+	if ( options.rootElement ) {
+		const root = options.rootElement;
+		const nodes = view._removeChildren( 0, view.childCount );
+
+		root._removeChildren( 0, root.childCount );
+		root._appendChild( nodes );
+
+		view = root;
+	}
+
+	// Parse ranges included in view text nodes.
+	const ranges = rangeParser.parse( view, options.order );
+
+	// If only one element is returned inside DocumentFragment - return that element.
+	if ( view.is( 'documentFragment' ) && view.childCount === 1 ) {
+		view = view.getChild( 0 );
+	}
+
+	// When ranges are present - return object containing view, and selection.
+	if ( ranges.length ) {
+		const selection = new _view_documentselection__WEBPACK_IMPORTED_MODULE_4__["default"]( ranges, { backward: !!options.lastRangeBackward } );
+
+		return {
+			view,
+			selection
+		};
+	}
+
+	// If single element is returned without selection - remove it from parent and return detached element.
+	if ( view.parent ) {
+		view._remove();
+	}
+
+	return view;
+}
+
+/**
+ * Private helper class used for converting ranges represented as text inside view {@link module:engine/view/text~Text text nodes}.
+ *
+ * @private
+ */
+class RangeParser {
+	/**
+	 * Creates a range parser instance.
+	 *
+	 * @param {Object} options The range parser configuration.
+	 * @param {Boolean} [options.sameSelectionCharacters=false] When set to `true`, the selection inside the text is marked as
+	 * `{` and `}` and the selection outside the text as `[` and `]`. When set to `false`, both are marked as `[` and `]`.
+	 */
+	constructor( options ) {
+		this.sameSelectionCharacters = !!options.sameSelectionCharacters;
+	}
+
+	/**
+	 * Parses the view and returns ranges represented inside {@link module:engine/view/text~Text text nodes}.
+	 * The method will remove all occurrences of `{`, `}`, `[` and `]` from found text nodes. If a text node is empty after
+	 * the process, it will be removed, too.
+	 *
+	 * @param {module:engine/view/node~Node} node The starting node.
+	 * @param {Array.<Number>} order The order of ranges. Each element should represent the desired position of the range after
+	 * sorting. For example: `[2, 3, 1]` means that the first range will be placed as the second, the second as the third and the third
+	 * as the first.
+	 * @returns {Array.<module:engine/view/range~Range>} An array with ranges found.
+	 */
+	parse( node, order ) {
+		this._positions = [];
+
+		// Remove all range brackets from view nodes and save their positions.
+		this._getPositions( node );
+
+		// Create ranges using gathered positions.
+		let ranges = this._createRanges();
+
+		// Sort ranges if needed.
+		if ( order.length ) {
+			if ( order.length != ranges.length ) {
+				throw new Error(
+					`Parse error - there are ${ ranges.length } ranges found, but ranges order array contains ${ order.length } elements.`
+				);
+			}
+
+			ranges = this._sortRanges( ranges, order );
+		}
+
+		return ranges;
+	}
+
+	/**
+	 * Gathers positions of brackets inside the view tree starting from the provided node. The method will remove all occurrences of
+	 * `{`, `}`, `[` and `]` from found text nodes. If a text node is empty after the process, it will be removed, too.
+	 *
+	 * @private
+	 * @param {module:engine/view/node~Node} node Staring node.
+	 */
+	_getPositions( node ) {
+		if ( node.is( 'documentFragment' ) || node.is( 'element' ) ) {
+			// Copy elements into the array, when nodes will be removed from parent node this array will still have all the
+			// items needed for iteration.
+			const children = [ ...node.getChildren() ];
+
+			for ( const child of children ) {
+				this._getPositions( child );
+			}
+		}
+
+		if ( node.is( 'text' ) ) {
+			const regexp = new RegExp(
+				`[${ TEXT_RANGE_START_TOKEN }${ TEXT_RANGE_END_TOKEN }\\${ ELEMENT_RANGE_END_TOKEN }\\${ ELEMENT_RANGE_START_TOKEN }]`,
+				'g'
+			);
+			let text = node.data;
+			let match;
+			let offset = 0;
+			const brackets = [];
+
+			// Remove brackets from text and store info about offset inside text node.
+			while ( ( match = regexp.exec( text ) ) ) {
+				const index = match.index;
+				const bracket = match[ 0 ];
+
+				brackets.push( {
+					bracket,
+					textOffset: index - offset
+				} );
+
+				offset++;
+			}
+
+			text = text.replace( regexp, '' );
+			node._data = text;
+			const index = node.index;
+			const parent = node.parent;
+
+			// Remove empty text nodes.
+			if ( !text ) {
+				node._remove();
+			}
+
+			for ( const item of brackets ) {
+				// Non-empty text node.
+				if ( text ) {
+					if (
+						this.sameSelectionCharacters ||
+						(
+							!this.sameSelectionCharacters &&
+							( item.bracket == TEXT_RANGE_START_TOKEN || item.bracket == TEXT_RANGE_END_TOKEN )
+						)
+					) {
+						// Store information about text range delimiter.
+						this._positions.push( {
+							bracket: item.bracket,
+							position: new _view_position__WEBPACK_IMPORTED_MODULE_6__["default"]( node, item.textOffset )
+						} );
+					} else {
+						// Check if element range delimiter is not placed inside text node.
+						if ( !this.sameSelectionCharacters && item.textOffset !== 0 && item.textOffset !== text.length ) {
+							throw new Error( `Parse error - range delimiter '${ item.bracket }' is placed inside text node.` );
+						}
+
+						// If bracket is placed at the end of the text node - it should be positioned after it.
+						const offset = ( item.textOffset === 0 ? index : index + 1 );
+
+						// Store information about element range delimiter.
+						this._positions.push( {
+							bracket: item.bracket,
+							position: new _view_position__WEBPACK_IMPORTED_MODULE_6__["default"]( parent, offset )
+						} );
+					}
+				} else {
+					if ( !this.sameSelectionCharacters &&
+						item.bracket == TEXT_RANGE_START_TOKEN ||
+						item.bracket == TEXT_RANGE_END_TOKEN
+					) {
+						throw new Error( `Parse error - text range delimiter '${ item.bracket }' is placed inside empty text node. ` );
+					}
+
+					// Store information about element range delimiter.
+					this._positions.push( {
+						bracket: item.bracket,
+						position: new _view_position__WEBPACK_IMPORTED_MODULE_6__["default"]( parent, index )
+					} );
+				}
+			}
+		}
+	}
+
+	/**
+	 * Sorts ranges in a given order. Range order should be an array and each element should represent the desired position
+	 * of the range after sorting.
+	 * For example: `[2, 3, 1]` means that the first range will be placed as the second, the second as the third and the third
+	 * as the first.
+	 *
+	 * @private
+	 * @param {Array.<module:engine/view/range~Range>} ranges Ranges to sort.
+	 * @param {Array.<Number>} rangesOrder An array with new range order.
+	 * @returns {Array} Sorted ranges array.
+	 */
+	_sortRanges( ranges, rangesOrder ) {
+		const sortedRanges = [];
+		let index = 0;
+
+		for ( const newPosition of rangesOrder ) {
+			if ( ranges[ newPosition - 1 ] === undefined ) {
+				throw new Error( 'Parse error - provided ranges order is invalid.' );
+			}
+
+			sortedRanges[ newPosition - 1 ] = ranges[ index ];
+			index++;
+		}
+
+		return sortedRanges;
+	}
+
+	/**
+	 * Uses all found bracket positions to create ranges from them.
+	 *
+	 * @private
+	 * @returns {Array.<module:engine/view/range~Range>}
+	 */
+	_createRanges() {
+		const ranges = [];
+		let range = null;
+
+		for ( const item of this._positions ) {
+			// When end of range is found without opening.
+			if ( !range && ( item.bracket == ELEMENT_RANGE_END_TOKEN || item.bracket == TEXT_RANGE_END_TOKEN ) ) {
+				throw new Error( `Parse error - end of range was found '${ item.bracket }' but range was not started before.` );
+			}
+
+			// When second start of range is found when one is already opened - selection does not allow intersecting
+			// ranges.
+			if ( range && ( item.bracket == ELEMENT_RANGE_START_TOKEN || item.bracket == TEXT_RANGE_START_TOKEN ) ) {
+				throw new Error( `Parse error - start of range was found '${ item.bracket }' but one range is already started.` );
+			}
+
+			if ( item.bracket == ELEMENT_RANGE_START_TOKEN || item.bracket == TEXT_RANGE_START_TOKEN ) {
+				range = new _view_range__WEBPACK_IMPORTED_MODULE_5__["default"]( item.position, item.position );
+			} else {
+				range.end = item.position;
+				ranges.push( range );
+				range = null;
+			}
+		}
+
+		// Check if all ranges have proper ending.
+		if ( range !== null ) {
+			throw new Error( 'Parse error - range was started but no end delimiter was found.' );
+		}
+
+		return ranges;
+	}
+}
+
+/**
+ * Private helper class used for converting the view tree to a string.
+ *
+ * @private
+ */
+class ViewStringify {
+	/**
+	 * Creates a view stringify instance.
+	 *
+	 * @param root
+	 * @param {module:engine/view/documentselection~DocumentSelection} selection A selection whose ranges
+	 * should also be converted to a string.
+	 * @param {Object} options An options object.
+	 * @param {Boolean} [options.showType=false] When set to `true`, the type of elements will be printed (`<container:p>`
+	 * instead of `<p>`, `<attribute:b>` instead of `<b>` and `<empty:img>` instead of `<img>`).
+	 * @param {Boolean} [options.showPriority=false] When set to `true`, the attribute element's priority will be printed.
+	 * @param {Boolean} [options.ignoreRoot=false] When set to `true`, the root's element opening and closing tag will not
+	 * be outputted.
+	 * @param {Boolean} [options.sameSelectionCharacters=false] When set to `true`, the selection inside the text is marked as
+	 * `{` and `}` and the selection outside the text as `[` and `]`. When set to `false`, both are marked as `[` and `]`.
+	 * @param {Boolean} [options.renderUIElements=false] When set to `true`, the inner content of each
+	 * {@link module:engine/view/uielement~UIElement} will be printed.
+	 */
+	constructor( root, selection, options ) {
+		this.root = root;
+		this.selection = selection;
+		this.ranges = [];
+
+		if ( this.selection ) {
+			this.ranges = [ ...selection.getRanges() ];
+		}
+
+		this.showType = !!options.showType;
+		this.showPriority = !!options.showPriority;
+		this.showAttributeElementId = !!options.showAttributeElementId;
+		this.ignoreRoot = !!options.ignoreRoot;
+		this.sameSelectionCharacters = !!options.sameSelectionCharacters;
+		this.renderUIElements = !!options.renderUIElements;
+	}
+
+	/**
+	 * Converts the view to a string.
+	 *
+	 * @returns {String} String representation of the view elements.
+	 */
+	stringify() {
+		let result = '';
+		this._walkView( this.root, chunk => {
+			result += chunk;
+		} );
+
+		return result;
+	}
+
+	/**
+	 * Executes a simple walker that iterates over all elements in the view tree starting from the root element.
+	 * Calls the `callback` with parsed chunks of string data.
+	 *
+	 * @private
+	 * @param {module:engine/view/documentfragment~DocumentFragment|module:engine/view/element~Element|module:engine/view/text~Text} root
+	 * @param {Function} callback
+	 */
+	_walkView( root, callback ) {
+		const ignore = this.ignoreRoot && this.root === root;
+
+		if ( root.is( 'element' ) || root.is( 'documentFragment' ) ) {
+			if ( root.is( 'element' ) && !ignore ) {
+				callback( this._stringifyElementOpen( root ) );
+			}
+
+			if ( this.renderUIElements && root.is( 'uiElement' ) ) {
+				callback( root.render( document ).innerHTML );
+			} else {
+				let offset = 0;
+				callback( this._stringifyElementRanges( root, offset ) );
+
+				for ( const child of root.getChildren() ) {
+					this._walkView( child, callback );
+					offset++;
+					callback( this._stringifyElementRanges( root, offset ) );
+				}
+			}
+
+			if ( root.is( 'element' ) && !ignore ) {
+				callback( this._stringifyElementClose( root ) );
+			}
+		}
+
+		if ( root.is( 'text' ) ) {
+			callback( this._stringifyTextRanges( root ) );
+		}
+	}
+
+	/**
+	 * Checks if a given {@link module:engine/view/element~Element element} has a {@link module:engine/view/range~Range#start range start}
+	 * or a {@link module:engine/view/range~Range#start range end} placed at a given offset and returns its string representation.
+	 *
+	 * @private
+	 * @param {module:engine/view/element~Element} element
+	 * @param {Number} offset
+	 */
+	_stringifyElementRanges( element, offset ) {
+		let start = '';
+		let end = '';
+		let collapsed = '';
+
+		for ( const range of this.ranges ) {
+			if ( range.start.parent == element && range.start.offset === offset ) {
+				if ( range.isCollapsed ) {
+					collapsed += ELEMENT_RANGE_START_TOKEN + ELEMENT_RANGE_END_TOKEN;
+				} else {
+					start += ELEMENT_RANGE_START_TOKEN;
+				}
+			}
+
+			if ( range.end.parent === element && range.end.offset === offset && !range.isCollapsed ) {
+				end += ELEMENT_RANGE_END_TOKEN;
+			}
+		}
+
+		return end + collapsed + start;
+	}
+
+	/**
+	 * Checks if a given {@link module:engine/view/element~Element Text node} has a
+	 * {@link module:engine/view/range~Range#start range start} or a
+	 * {@link module:engine/view/range~Range#start range end} placed somewhere inside. Returns a string representation of text
+	 * with range delimiters placed inside.
+	 *
+	 * @private
+	 * @param {module:engine/view/text~Text} node
+	 */
+	_stringifyTextRanges( node ) {
+		const length = node.data.length;
+		let result = node.data.split( '' );
+		let rangeStartToken, rangeEndToken;
+
+		if ( this.sameSelectionCharacters ) {
+			rangeStartToken = ELEMENT_RANGE_START_TOKEN;
+			rangeEndToken = ELEMENT_RANGE_END_TOKEN;
+		} else {
+			rangeStartToken = TEXT_RANGE_START_TOKEN;
+			rangeEndToken = TEXT_RANGE_END_TOKEN;
+		}
+
+		// Add one more element for ranges ending after last character in text.
+		result[ length ] = '';
+
+		// Represent each letter as object with information about opening/closing ranges at each offset.
+		result = result.map( letter => {
+			return {
+				letter,
+				start: '',
+				end: '',
+				collapsed: ''
+			};
+		} );
+
+		for ( const range of this.ranges ) {
+			const start = range.start;
+			const end = range.end;
+
+			if ( start.parent == node && start.offset >= 0 && start.offset <= length ) {
+				if ( range.isCollapsed ) {
+					result[ end.offset ].collapsed += rangeStartToken + rangeEndToken;
+				} else {
+					result[ start.offset ].start += rangeStartToken;
+				}
+			}
+
+			if ( end.parent == node && end.offset >= 0 && end.offset <= length && !range.isCollapsed ) {
+				result[ end.offset ].end += rangeEndToken;
+			}
+		}
+
+		return result.map( item => item.end + item.collapsed + item.start + item.letter ).join( '' );
+	}
+
+	/**
+	 * Converts the passed {@link module:engine/view/element~Element element} to an opening tag.
+	 *
+	 * Depending on the current configuration, the opening tag can be simple (`<a>`), contain a type prefix (`<container:p>`,
+	 * `<attribute:a>` or `<empty:img>`), contain priority information ( `<attribute:a view-priority="20">` ),
+	 * or contain element id ( `<attribute:span view-id="foo">` ). Element attributes will also be included
+	 * (`<a href="https://ckeditor.com" name="foobar">`).
+	 *
+	 * @private
+	 * @param {module:engine/view/element~Element} element
+	 * @returns {String}
+	 */
+	_stringifyElementOpen( element ) {
+		const priority = this._stringifyElementPriority( element );
+		const id = this._stringifyElementId( element );
+
+		const type = this._stringifyElementType( element );
+		const name = [ type, element.name ].filter( i => i !== '' ).join( ':' );
+		const attributes = this._stringifyElementAttributes( element );
+		const parts = [ name, priority, id, attributes ];
+
+		return `<${ parts.filter( i => i !== '' ).join( ' ' ) }>`;
+	}
+
+	/**
+	 * Converts the passed {@link module:engine/view/element~Element element} to a closing tag.
+	 * Depending on the current configuration, the closing tag can be simple (`</a>`) or contain a type prefix (`</container:p>`,
+	 * `</attribute:a>` or `</empty:img>`).
+	 *
+	 * @private
+	 * @param {module:engine/view/element~Element} element
+	 * @returns {String}
+	 */
+	_stringifyElementClose( element ) {
+		const type = this._stringifyElementType( element );
+		const name = [ type, element.name ].filter( i => i !== '' ).join( ':' );
+
+		return `</${ name }>`;
+	}
+
+	/**
+	 * Converts the passed {@link module:engine/view/element~Element element's} type to its string representation
+	 *
+	 * Returns:
+	 * * 'attribute' for {@link module:engine/view/attributeelement~AttributeElement attribute elements},
+	 * * 'container' for {@link module:engine/view/containerelement~ContainerElement container elements},
+	 * * 'empty' for {@link module:engine/view/emptyelement~EmptyElement empty elements}.
+	 * * 'ui' for {@link module:engine/view/uielement~UIElement UI elements}.
+	 * * an empty string when the current configuration is preventing showing elements' types.
+	 *
+	 * @private
+	 * @param {module:engine/view/element~Element} element
+	 * @returns {String}
+	 */
+	_stringifyElementType( element ) {
+		if ( this.showType ) {
+			for ( const type in allowedTypes ) {
+				if ( element instanceof allowedTypes[ type ] ) {
+					return type;
+				}
+			}
+		}
+
+		return '';
+	}
+
+	/**
+	 * Converts the passed {@link module:engine/view/element~Element element} to its priority representation.
+	 *
+	 * The priority string representation will be returned when the passed element is an instance of
+	 * {@link module:engine/view/attributeelement~AttributeElement attribute element} and the current configuration allows to show the
+	 * priority. Otherwise returns an empty string.
+	 *
+	 * @private
+	 * @param {module:engine/view/element~Element} element
+	 * @returns {String}
+	 */
+	_stringifyElementPriority( element ) {
+		if ( this.showPriority && element.is( 'attributeElement' ) ) {
+			return `view-priority="${ element.priority }"`;
+		}
+
+		return '';
+	}
+
+	/**
+	 * Converts the passed {@link module:engine/view/element~Element element} to its id representation.
+	 *
+	 * The id string representation will be returned when the passed element is an instance of
+	 * {@link module:engine/view/attributeelement~AttributeElement attribute element}, the element has an id
+	 * and the current configuration allows to show the id. Otherwise returns an empty string.
+	 *
+	 * @private
+	 * @param {module:engine/view/element~Element} element
+	 * @returns {String}
+	 */
+	_stringifyElementId( element ) {
+		if ( this.showAttributeElementId && element.is( 'attributeElement' ) && element.id ) {
+			return `view-id="${ element.id }"`;
+		}
+
+		return '';
+	}
+
+	/**
+	 * Converts the passed {@link module:engine/view/element~Element element} attributes to their string representation.
+	 * If an element has no attributes, an empty string is returned.
+	 *
+	 * @private
+	 * @param {module:engine/view/element~Element} element
+	 * @returns {String}
+	 */
+	_stringifyElementAttributes( element ) {
+		const attributes = [];
+		const keys = [ ...element.getAttributeKeys() ].sort();
+
+		for ( const attribute of keys ) {
+			let attributeValue;
+
+			if ( attribute === 'class' ) {
+				attributeValue = [ ...element.getClassNames() ]
+					.sort()
+					.join( ' ' );
+			} else if ( attribute === 'style' ) {
+				attributeValue = [ ...element.getStyleNames() ]
+					.sort()
+					.map( style => `${ style }:${ element.getStyle( style ) }` )
+					.join( ';' );
+			} else {
+				attributeValue = element.getAttribute( attribute );
+			}
+
+			attributes.push( `${ attribute }="${ attributeValue }"` );
+		}
+
+		return attributes.join( ' ' );
+	}
+}
+
+// Converts {@link module:engine/view/element~Element elements} to
+// {@link module:engine/view/attributeelement~AttributeElement attribute elements},
+// {@link module:engine/view/containerelement~ContainerElement container elements},
+// {@link module:engine/view/emptyelement~EmptyElement empty elements} or
+// {@link module:engine/view/uielement~UIElement UI elements}.
+// It converts the whole tree starting from the `rootNode`. The conversion is based on element names.
+// See the `_convertElement` method for more details.
+//
+// @param {module:engine/view/element~Element|module:engine/view/documentfragment~DocumentFragment|module:engine/view/text~Text}
+//  rootNode The root node to convert.
+// @returns {module:engine/view/element~Element|module:engine/view/documentfragment~DocumentFragment|
+// module:engine/view/text~Text} The root node of converted elements.
+function _convertViewElements( rootNode ) {
+	if ( rootNode.is( 'element' ) || rootNode.is( 'documentFragment' ) ) {
+		// Convert element or leave document fragment.
+		const convertedElement = rootNode.is( 'documentFragment' ) ? new _view_documentfragment__WEBPACK_IMPORTED_MODULE_1__["default"]() : _convertElement( rootNode );
+
+		// Convert all child nodes.
+		// Cache the nodes in array. Otherwise, we would skip some nodes because during iteration we move nodes
+		// from `rootNode` to `convertedElement`. This would interfere with iteration.
+		for ( const child of [ ...rootNode.getChildren() ] ) {
+			if ( convertedElement.is( 'emptyElement' ) ) {
+				throw new Error( 'Parse error - cannot parse inside EmptyElement.' );
+			}
+
+			if ( convertedElement.is( 'uiElement' ) ) {
+				throw new Error( 'Parse error - cannot parse inside UIElement.' );
+			}
+
+			convertedElement._appendChild( _convertViewElements( child ) );
+		}
+
+		return convertedElement;
+	}
+
+	return rootNode;
+}
+
+// Converts an {@link module:engine/view/element~Element element} to
+// {@link module:engine/view/attributeelement~AttributeElement attribute element},
+// {@link module:engine/view/containerelement~ContainerElement container element},
+// {@link module:engine/view/emptyelement~EmptyElement empty element} or
+// {@link module:engine/view/uielement~UIElement UI element}.
+// If the element's name is in the format of `attribute:b`, it will be converted to
+// an {@link module:engine/view/attributeelement~AttributeElement attribute element} with a priority of 11.
+// Additionally, attribute elements may have specified priority (for example `view-priority="11"`) and/or
+// id (for example `view-id="foo"`).
+// If the element's name is in the format of `container:p`, it will be converted to
+// a {@link module:engine/view/containerelement~ContainerElement container element}.
+// If the element's name is in the format of `empty:img`, it will be converted to
+// an {@link module:engine/view/emptyelement~EmptyElement empty element}.
+// If the element's name is in the format of `ui:span`, it will be converted to
+// a {@link module:engine/view/uielement~UIElement UI element}.
+// If the element's name does not contain any additional information, a {@link module:engine/view/element~Element view Element} will be
+// returned.
+//
+// @param {module:engine/view/element~Element} viewElement A view element to convert.
+// @returns {module:engine/view/element~Element|module:engine/view/attributeelement~AttributeElement|
+// module:engine/view/emptyelement~EmptyElement|module:engine/view/uielement~UIElement|
+// module:engine/view/containerelement~ContainerElement} A tree view
+// element converted according to its name.
+function _convertElement( viewElement ) {
+	const info = _convertElementNameAndInfo( viewElement );
+	const ElementConstructor = allowedTypes[ info.type ];
+	const newElement = ElementConstructor ? new ElementConstructor( info.name ) : new _view_element__WEBPACK_IMPORTED_MODULE_3__["default"]( info.name );
+
+	if ( newElement.is( 'attributeElement' ) ) {
+		if ( info.priority !== null ) {
+			newElement._priority = info.priority;
+		}
+
+		if ( info.id !== null ) {
+			newElement._id = info.id;
+		}
+	}
+
+	// Move attributes.
+	for ( const attributeKey of viewElement.getAttributeKeys() ) {
+		newElement._setAttribute( attributeKey, viewElement.getAttribute( attributeKey ) );
+	}
+
+	return newElement;
+}
+
+// Converts the `view-priority` attribute and the {@link module:engine/view/element~Element#name element's name} information needed for
+// creating {@link module:engine/view/attributeelement~AttributeElement attribute element},
+// {@link module:engine/view/containerelement~ContainerElement container element},
+// {@link module:engine/view/emptyelement~EmptyElement empty element} or
+// {@link module:engine/view/uielement~UIElement UI element}.
+// The name can be provided in two formats: as a simple element's name (`div`), or as a type and name (`container:div`,
+// `attribute:span`, `empty:img`, `ui:span`);
+//
+// @param {module:engine/view/element~Element} element The element whose name should be converted.
+// @returns {Object} info An object with parsed information.
+// @returns {String} info.name The parsed name of the element.
+// @returns {String|null} info.type The parsed type of the element. It can be `attribute`, `container` or `empty`.
+// returns {Number|null} info.priority The parsed priority of the element.
+function _convertElementNameAndInfo( viewElement ) {
+	const parts = viewElement.name.split( ':' );
+
+	const priority = _convertPriority( viewElement.getAttribute( 'view-priority' ) );
+	const id = viewElement.hasAttribute( 'view-id' ) ? viewElement.getAttribute( 'view-id' ) : null;
+
+	viewElement._removeAttribute( 'view-priority' );
+	viewElement._removeAttribute( 'view-id' );
+
+	if ( parts.length == 1 ) {
+		return {
+			name: parts[ 0 ],
+			type: priority !== null ? 'attribute' : null,
+			priority,
+			id
+		};
+	}
+
+	// Check if type and name: container:div.
+	const type = _convertType( parts[ 0 ] );
+
+	if ( type ) {
+		return {
+			name: parts[ 1 ],
+			type,
+			priority,
+			id
+		};
+	}
+
+	throw new Error( `Parse error - cannot parse element's name: ${ viewElement.name }.` );
+}
+
+// Checks if the element's type is allowed. Returns `attribute`, `container`, `empty` or `null`.
+//
+// @param {String} type
+// @returns {String|null}
+function _convertType( type ) {
+	return allowedTypes[ type ] ? type : null;
+}
+
+// Checks if a given priority is allowed. Returns null if the priority cannot be converted.
+//
+// @param {String} priorityString
+// returns {Number|null}
+function _convertPriority( priorityString ) {
+	const priority = parseInt( priorityString, 10 );
+
+	if ( !isNaN( priority ) ) {
+		return priority;
+	}
+
+	return null;
 }
 
 

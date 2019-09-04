@@ -19,6 +19,8 @@ import ButtonView from '@ckeditor/ckeditor5-ui/src/button/buttonview';
 
 import CKEditorInspector from '@ckeditor/ckeditor5-inspector';
 
+import { getData } from '@ckeditor/ckeditor5-engine/src/dev-utils/model';
+
 class InsertImage extends Plugin {
     init() {
         const editor = this.editor;
@@ -59,6 +61,7 @@ ClassicEditor
     .then( editor => {
         console.log( 'Editor was initialized', editor );
         CKEditorInspector.attach( editor );
+        console.log( getData( editor.model ) );
     } )
     .catch( error => {
         console.error( error.stack );
