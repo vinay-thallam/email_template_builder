@@ -7,9 +7,17 @@ import Bold from '@ckeditor/ckeditor5-basic-styles/src/bold';
 import Italic from '@ckeditor/ckeditor5-basic-styles/src/italic';
 import Image from '@ckeditor/ckeditor5-image/src/image';
 
+import Plugin from '@ckeditor/ckeditor5-core/src/plugin';
+
+class InsertImage extends Plugin {
+    init() {
+        console.log( 'InsertImage was initialized' );
+    }
+}
+
 ClassicEditor
     .create( document.querySelector( '#editor' ), {
-        plugins: [ Essentials, Paragraph, Bold, Italic, Image ],
+        plugins: [ Essentials, Paragraph, Bold, Italic, Image, InsertImage ],
         toolbar: [ 'bold', 'italic' ]
     } )
     .then( editor => {
