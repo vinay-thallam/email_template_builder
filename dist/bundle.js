@@ -138,6 +138,15 @@ class InsertImage extends _ckeditor_ckeditor5_core_src_plugin__WEBPACK_IMPORTED_
             // Callback executed once the image is clicked.
             view.on( 'execute', () => {
                 const imageURL = prompt( 'Image URL' );
+
+                editor.model.change( writer => {
+                    const imageElement = writer.createElement( 'image', {
+                        src: imageURL
+                    } );
+
+                    // Insert the image in the current selection location.
+                    editor.model.insertContent( imageElement, editor.model.document.selection );
+                } );
             } );
 
             return view;
