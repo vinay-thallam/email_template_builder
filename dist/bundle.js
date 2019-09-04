@@ -101,6 +101,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _ckeditor_ckeditor5_basic_styles_src_bold__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! @ckeditor/ckeditor5-basic-styles/src/bold */ "./node_modules/@ckeditor/ckeditor5-basic-styles/src/bold.js");
 /* harmony import */ var _ckeditor_ckeditor5_basic_styles_src_italic__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! @ckeditor/ckeditor5-basic-styles/src/italic */ "./node_modules/@ckeditor/ckeditor5-basic-styles/src/italic.js");
 /* harmony import */ var _ckeditor_ckeditor5_image_src_image__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! @ckeditor/ckeditor5-image/src/image */ "./node_modules/@ckeditor/ckeditor5-image/src/image.js");
+/* harmony import */ var _ckeditor_ckeditor5_core_src_plugin__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! @ckeditor/ckeditor5-core/src/plugin */ "./node_modules/@ckeditor/ckeditor5-core/src/plugin.js");
+/* harmony import */ var _ckeditor_ckeditor5_core_theme_icons_image_svg__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! @ckeditor/ckeditor5-core/theme/icons/image.svg */ "./node_modules/@ckeditor/ckeditor5-core/theme/icons/image.svg");
+/* harmony import */ var _ckeditor_ckeditor5_ui_src_button_buttonview__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! @ckeditor/ckeditor5-ui/src/button/buttonview */ "./node_modules/@ckeditor/ckeditor5-ui/src/button/buttonview.js");
 // app.js
 
 
@@ -110,10 +113,42 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
+
+
+
+// This SVG file import will be handled by webpack's raw-text loader.
+// This means that imageIcon will hold the source SVG.
+
+
+
+
+class InsertImage extends _ckeditor_ckeditor5_core_src_plugin__WEBPACK_IMPORTED_MODULE_6__["default"] {
+    init() {
+        const editor = this.editor;
+
+        editor.ui.componentFactory.add( 'insertImage', locale => {
+            const view = new _ckeditor_ckeditor5_ui_src_button_buttonview__WEBPACK_IMPORTED_MODULE_8__["default"]( locale );
+
+            view.set( {
+                label: 'Insert image',
+                icon: _ckeditor_ckeditor5_core_theme_icons_image_svg__WEBPACK_IMPORTED_MODULE_7__["default"],
+                tooltip: true
+            } );
+
+            // Callback executed once the image is clicked.
+            view.on( 'execute', () => {
+                const imageURL = prompt( 'Image URL' );
+            } );
+
+            return view;
+        } );
+    }
+}
+
 _ckeditor_ckeditor5_editor_classic_src_classiceditor__WEBPACK_IMPORTED_MODULE_0__["default"]
     .create( document.querySelector( '#editor' ), {
-        plugins: [ _ckeditor_ckeditor5_essentials_src_essentials__WEBPACK_IMPORTED_MODULE_1__["default"], _ckeditor_ckeditor5_paragraph_src_paragraph__WEBPACK_IMPORTED_MODULE_2__["default"], _ckeditor_ckeditor5_basic_styles_src_bold__WEBPACK_IMPORTED_MODULE_3__["default"], _ckeditor_ckeditor5_basic_styles_src_italic__WEBPACK_IMPORTED_MODULE_4__["default"], _ckeditor_ckeditor5_image_src_image__WEBPACK_IMPORTED_MODULE_5__["default"] ],
-        toolbar: [ 'bold', 'italic' ]
+        plugins: [ _ckeditor_ckeditor5_essentials_src_essentials__WEBPACK_IMPORTED_MODULE_1__["default"], _ckeditor_ckeditor5_paragraph_src_paragraph__WEBPACK_IMPORTED_MODULE_2__["default"], _ckeditor_ckeditor5_basic_styles_src_bold__WEBPACK_IMPORTED_MODULE_3__["default"], _ckeditor_ckeditor5_basic_styles_src_italic__WEBPACK_IMPORTED_MODULE_4__["default"], _ckeditor_ckeditor5_image_src_image__WEBPACK_IMPORTED_MODULE_5__["default"], InsertImage ],
+        toolbar: [ 'bold', 'italic', 'insertImage' ]
     } )
     .then( editor => {
         console.log( 'Editor was initialized', editor );
@@ -3386,6 +3421,19 @@ __webpack_require__.r(__webpack_exports__);
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony default export */ __webpack_exports__["default"] = ("<svg viewBox=\"0 0 20 20\" xmlns=\"http://www.w3.org/2000/svg\"><path d=\"M6.972 16.615a.997.997 0 0 1-.744-.292l-4.596-4.596a1 1 0 1 1 1.414-1.414l3.926 3.926 9.937-9.937a1 1 0 0 1 1.414 1.415L7.717 16.323a.997.997 0 0 1-.745.292z\"/></svg>");
+
+/***/ }),
+
+/***/ "./node_modules/@ckeditor/ckeditor5-core/theme/icons/image.svg":
+/*!*********************************************************************!*\
+  !*** ./node_modules/@ckeditor/ckeditor5-core/theme/icons/image.svg ***!
+  \*********************************************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony default export */ __webpack_exports__["default"] = ("<svg viewBox=\"0 0 20 20\" xmlns=\"http://www.w3.org/2000/svg\"><path d=\"M6.91 10.54c.26-.23.64-.21.88.03l3.36 3.14 2.23-2.06a.64.64 0 0 1 .87 0l2.52 2.97V4.5H3.2v10.12l3.71-4.08zm10.27-7.51c.6 0 1.09.47 1.09 1.05v11.84c0 .59-.49 1.06-1.09 1.06H2.79c-.6 0-1.09-.47-1.09-1.06V4.08c0-.58.49-1.05 1.1-1.05h14.38zm-5.22 5.56a1.96 1.96 0 1 1 3.4-1.96 1.96 1.96 0 0 1-3.4 1.96z\"/></svg>");
 
 /***/ }),
 
