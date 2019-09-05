@@ -100404,11 +100404,138 @@ class SimpleBox extends _ckeditor_ckeditor5_core_src_plugin__WEBPACK_IMPORTED_MO
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return SimpleBoxEditing; });
 /* harmony import */ var _ckeditor_ckeditor5_core_src_plugin__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @ckeditor/ckeditor5-core/src/plugin */ "./node_modules/@ckeditor/ckeditor5-core/src/plugin.js");
+/* harmony import */ var _ckeditor_ckeditor5_widget_src_utils__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @ckeditor/ckeditor5-widget/src/utils */ "./node_modules/@ckeditor/ckeditor5-widget/src/utils.js");
+/* harmony import */ var _ckeditor_ckeditor5_widget_src_widget__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @ckeditor/ckeditor5-widget/src/widget */ "./node_modules/@ckeditor/ckeditor5-widget/src/widget.js");
+
+
+
+
 
 
 class SimpleBoxEditing extends _ckeditor_ckeditor5_core_src_plugin__WEBPACK_IMPORTED_MODULE_0__["default"] {
     init() {
         console.log( 'SimpleBoxEditing#init() got called' );
+        this._defineSchema();       
+        this._defineConverters();
+    }
+
+    _defineSchema() {             
+
+        // Code in this funcition is to define the schema for the markup below,
+        // <simpleBox>
+        //     <simpleBoxTitle></simpleBoxTitle>
+        //     <simpleBoxDescription></simpleBoxDescription>
+        // </simpleBox>
+
+        const schema = this.editor.model.schema;
+
+        schema.register( 'simpleBox', {
+            // Behaves like a self-contained object (e.g. an image).
+            isObject: true,
+            // Allow in places where other blocks are allowed (e.g. directly in the root).
+            allowWhere: '$block'
+        } );
+
+        schema.register( 'simpleBoxTitle', {
+            // Cannot be split or left by the caret.
+            isLimit: true,
+            allowIn: 'simpleBox',
+            // Allow content which is allowed in blocks (i.e. text with attributes).
+            allowContentOf: '$block'
+        } );
+
+        schema.register( 'simpleBoxDescription', {
+            // Cannot be split or left by the caret.
+            isLimit: true,
+            allowIn: 'simpleBox',
+            // Allow content which is allowed in the root (e.g. paragraphs).
+            allowContentOf: '$root'
+        } );
+    }
+
+    _defineConverters() {
+
+        // Actual structure we want to achieve in the DOM is as below. This function defines the converters to do the same.
+        // <section class="simple-box">
+        //     <h1 class="simple-box-title"></h1>
+        //     <div class="simple-box-description"></div>
+        // </section>
+
+        const conversion = this.editor.conversion;
+
+        // <simpleBox> converters
+        conversion.for( 'upcast' ).elementToElement( {
+            model: 'simpleBox',
+            view: {
+                name: 'section',
+                classes: 'simple-box'
+            }
+        } );
+        conversion.for( 'dataDowncast' ).elementToElement( {
+            model: 'simpleBox',
+            view: {
+                name: 'section',
+                classes: 'simple-box'
+            }
+        } );
+        conversion.for( 'editingDowncast' ).elementToElement( {
+            model: 'simpleBox',
+            view: ( modelElement, viewWriter ) => {
+                const section = viewWriter.createContainerElement( 'section', { class: 'simple-box' } );
+
+                return Object(_ckeditor_ckeditor5_widget_src_utils__WEBPACK_IMPORTED_MODULE_1__["toWidget"])( section, viewWriter, { label: 'simple box widget' } );
+            }
+        } );
+
+        // <simpleBoxTitle> converters
+        conversion.for( 'upcast' ).elementToElement( {
+            model: 'simpleBoxTitle',
+            view: {
+                name: 'h1',
+                classes: 'simple-box-title'
+            }
+        } );
+        conversion.for( 'dataDowncast' ).elementToElement( {
+            model: 'simpleBoxTitle',
+            view: {
+                name: 'h1',
+                classes: 'simple-box-title'
+            }
+        } );
+        conversion.for( 'editingDowncast' ).elementToElement( {
+            model: 'simpleBoxTitle',
+            view: ( modelElement, viewWriter ) => {
+                // Note: You use a more specialized createEditableElement() method here.
+                const h1 = viewWriter.createEditableElement( 'h1', { class: 'simple-box-title' } );
+
+                return Object(_ckeditor_ckeditor5_widget_src_utils__WEBPACK_IMPORTED_MODULE_1__["toWidgetEditable"])( h1, viewWriter );
+            }
+        } );
+
+        // <simpleBoxDescription> converters
+        conversion.for( 'upcast' ).elementToElement( {
+            model: 'simpleBoxDescription',
+            view: {
+                name: 'div',
+                classes: 'simple-box-description'
+            }
+        } );
+        conversion.for( 'dataDowncast' ).elementToElement( {
+            model: 'simpleBoxDescription',
+            view: {
+                name: 'div',
+                classes: 'simple-box-description'
+            }
+        } );
+        conversion.for( 'editingDowncast' ).elementToElement( {
+            model: 'simpleBoxDescription',
+            view: ( modelElement, viewWriter ) => {
+                // Note: You use a more specialized createEditableElement() method here.
+                const div = viewWriter.createEditableElement( 'div', { class: 'simple-box-description' } );
+
+                return Object(_ckeditor_ckeditor5_widget_src_utils__WEBPACK_IMPORTED_MODULE_1__["toWidgetEditable"])( div, viewWriter );
+            }
+        } );        
     }
 }
 

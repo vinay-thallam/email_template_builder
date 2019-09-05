@@ -19,6 +19,7 @@
     "@ckeditor/ckeditor5-paragraph": "^11.0.5",
     "@ckeditor/ckeditor5-theme-lark": "^14.2.0",
     "@ckeditor/ckeditor5-ui": "^14.0.0",
+    "@ckeditor/ckeditor5-widget": "^11.1.0",
     "postcss-loader": "^3.0.0",
     "raw-loader": "^3.1.0",
     "style-loader": "^1.0.0",
