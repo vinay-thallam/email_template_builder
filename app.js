@@ -62,6 +62,7 @@ ClassicEditor
         toolbar: [ 'bold', 'italic', 'insertImage' ]
     } )
     .then( editor => {
+        window.MyEditor = editor
         console.log( 'Editor was initialized', editor );
         CKEditorInspector.attach( editor );
         console.log( getData( editor.model ) );

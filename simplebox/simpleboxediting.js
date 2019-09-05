@@ -47,6 +47,12 @@ export default class SimpleBoxEditing extends Plugin {
             // Allow content which is allowed in the root (e.g. paragraphs).
             allowContentOf: '$root'
         } );
+
+        schema.addChildCheck( ( context, childDefinition ) => {
+            if ( context.endsWith( 'simpleBoxDescription' ) && childDefinition.name == 'simpleBox' ) {
+                return false;
+            }
+        } );
     }
 
     _defineConverters() {
