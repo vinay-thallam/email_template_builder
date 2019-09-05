@@ -53,6 +53,9 @@ export default class SimpleBoxEditing extends Plugin {
         //     <div class="simple-box-description"></div>
         // </section>
 
+
+        //These converters are too verbose and long. Check this ticket for improvement. https://github.com/ckeditor/ckeditor5/issues/1228
+
         const conversion = this.editor.conversion;
 
         // <simpleBox> converters
