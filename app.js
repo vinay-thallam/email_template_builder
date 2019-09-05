@@ -21,6 +21,9 @@ import CKEditorInspector from '@ckeditor/ckeditor5-inspector';
 
 import { getData } from '@ckeditor/ckeditor5-engine/src/dev-utils/model';
 
+
+import SimpleBox from './simplebox/simplebox';
+
 class InsertImage extends Plugin {
     init() {
         const editor = this.editor;
@@ -55,7 +58,7 @@ class InsertImage extends Plugin {
 
 ClassicEditor
     .create( document.querySelector( '#editor' ), {
-        plugins: [ Essentials, Paragraph, Bold, Italic, Image, InsertImage, ImageCaption ],
+        plugins: [ Essentials, Paragraph, Bold, Italic, Image, InsertImage, ImageCaption, SimpleBox ],
         toolbar: [ 'bold', 'italic', 'insertImage' ]
     } )
     .then( editor => {

@@ -108,7 +108,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _ckeditor_ckeditor5_inspector__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! @ckeditor/ckeditor5-inspector */ "./node_modules/@ckeditor/ckeditor5-inspector/build/inspector.js");
 /* harmony import */ var _ckeditor_ckeditor5_inspector__WEBPACK_IMPORTED_MODULE_10___default = /*#__PURE__*/__webpack_require__.n(_ckeditor_ckeditor5_inspector__WEBPACK_IMPORTED_MODULE_10__);
 /* harmony import */ var _ckeditor_ckeditor5_engine_src_dev_utils_model__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! @ckeditor/ckeditor5-engine/src/dev-utils/model */ "./node_modules/@ckeditor/ckeditor5-engine/src/dev-utils/model.js");
-/* harmony import */ var _ckeditor_ckeditor5_engine_src_dev_utils_view__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! @ckeditor/ckeditor5-engine/src/dev-utils/view */ "./node_modules/@ckeditor/ckeditor5-engine/src/dev-utils/view.js");
+/* harmony import */ var _simplebox_simplebox__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! ./simplebox/simplebox */ "./simplebox/simplebox.js");
 // app.js
 
 
@@ -124,6 +124,8 @@ __webpack_require__.r(__webpack_exports__);
 
 // This SVG file import will be handled by webpack's raw-text loader.
 // This means that imageIcon will hold the source SVG.
+
+
 
 
 
@@ -167,14 +169,13 @@ class InsertImage extends _ckeditor_ckeditor5_core_src_plugin__WEBPACK_IMPORTED_
 
 _ckeditor_ckeditor5_editor_classic_src_classiceditor__WEBPACK_IMPORTED_MODULE_0__["default"]
     .create( document.querySelector( '#editor' ), {
-        plugins: [ _ckeditor_ckeditor5_essentials_src_essentials__WEBPACK_IMPORTED_MODULE_1__["default"], _ckeditor_ckeditor5_paragraph_src_paragraph__WEBPACK_IMPORTED_MODULE_2__["default"], _ckeditor_ckeditor5_basic_styles_src_bold__WEBPACK_IMPORTED_MODULE_3__["default"], _ckeditor_ckeditor5_basic_styles_src_italic__WEBPACK_IMPORTED_MODULE_4__["default"], _ckeditor_ckeditor5_image_src_image__WEBPACK_IMPORTED_MODULE_5__["default"], InsertImage, _ckeditor_ckeditor5_image_src_imagecaption__WEBPACK_IMPORTED_MODULE_6__["default"] ],
+        plugins: [ _ckeditor_ckeditor5_essentials_src_essentials__WEBPACK_IMPORTED_MODULE_1__["default"], _ckeditor_ckeditor5_paragraph_src_paragraph__WEBPACK_IMPORTED_MODULE_2__["default"], _ckeditor_ckeditor5_basic_styles_src_bold__WEBPACK_IMPORTED_MODULE_3__["default"], _ckeditor_ckeditor5_basic_styles_src_italic__WEBPACK_IMPORTED_MODULE_4__["default"], _ckeditor_ckeditor5_image_src_image__WEBPACK_IMPORTED_MODULE_5__["default"], InsertImage, _ckeditor_ckeditor5_image_src_imagecaption__WEBPACK_IMPORTED_MODULE_6__["default"], _simplebox_simplebox__WEBPACK_IMPORTED_MODULE_12__["default"] ],
         toolbar: [ 'bold', 'italic', 'insertImage' ]
     } )
     .then( editor => {
         console.log( 'Editor was initialized', editor );
         _ckeditor_ckeditor5_inspector__WEBPACK_IMPORTED_MODULE_10___default.a.attach( editor );
         console.log( Object(_ckeditor_ckeditor5_engine_src_dev_utils_model__WEBPACK_IMPORTED_MODULE_11__["getData"])( editor.model ) );
-        console.log( Object(_ckeditor_ckeditor5_engine_src_dev_utils_view__WEBPACK_IMPORTED_MODULE_12__["getData"])( editor.model ) );
     } )
     .catch( error => {
         console.error( error.stack );
@@ -100363,6 +100364,74 @@ module.exports = function(originalModule) {
 	return module;
 };
 
+
+/***/ }),
+
+/***/ "./simplebox/simplebox.js":
+/*!********************************!*\
+  !*** ./simplebox/simplebox.js ***!
+  \********************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return SimpleBox; });
+/* harmony import */ var _simpleboxediting__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./simpleboxediting */ "./simplebox/simpleboxediting.js");
+/* harmony import */ var _simpleboxui__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./simpleboxui */ "./simplebox/simpleboxui.js");
+/* harmony import */ var _ckeditor_ckeditor5_core_src_plugin__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @ckeditor/ckeditor5-core/src/plugin */ "./node_modules/@ckeditor/ckeditor5-core/src/plugin.js");
+
+
+
+
+class SimpleBox extends _ckeditor_ckeditor5_core_src_plugin__WEBPACK_IMPORTED_MODULE_2__["default"] {
+    static get requires() {
+        return [ _simpleboxediting__WEBPACK_IMPORTED_MODULE_0__["default"], _simpleboxui__WEBPACK_IMPORTED_MODULE_1__["default"] ];
+    }
+}
+
+
+/***/ }),
+
+/***/ "./simplebox/simpleboxediting.js":
+/*!***************************************!*\
+  !*** ./simplebox/simpleboxediting.js ***!
+  \***************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return SimpleBoxEditing; });
+/* harmony import */ var _ckeditor_ckeditor5_core_src_plugin__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @ckeditor/ckeditor5-core/src/plugin */ "./node_modules/@ckeditor/ckeditor5-core/src/plugin.js");
+
+
+class SimpleBoxEditing extends _ckeditor_ckeditor5_core_src_plugin__WEBPACK_IMPORTED_MODULE_0__["default"] {
+    init() {
+        console.log( 'SimpleBoxEditing#init() got called' );
+    }
+}
+
+/***/ }),
+
+/***/ "./simplebox/simpleboxui.js":
+/*!**********************************!*\
+  !*** ./simplebox/simpleboxui.js ***!
+  \**********************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return SimpleBoxUI; });
+/* harmony import */ var _ckeditor_ckeditor5_core_src_plugin__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @ckeditor/ckeditor5-core/src/plugin */ "./node_modules/@ckeditor/ckeditor5-core/src/plugin.js");
+
+
+class SimpleBoxUI extends _ckeditor_ckeditor5_core_src_plugin__WEBPACK_IMPORTED_MODULE_0__["default"] {
+    init() {
+        console.log( 'SimpleBoxUI#init() got called' );
+    }
+}
 
 /***/ })
 
