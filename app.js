@@ -59,7 +59,7 @@ class InsertImage extends Plugin {
 ClassicEditor
     .create( document.querySelector( '#editor' ), {
         plugins: [ Essentials, Paragraph, Bold, Italic, Image, InsertImage, ImageCaption, SimpleBox ],
-        toolbar: [ 'bold', 'italic', 'insertImage' ]
+        toolbar: [ 'bold', 'italic', 'insertImage', 'simpleBox' ]
     } )
     .then( editor => {
         window.MyEditor = editor
