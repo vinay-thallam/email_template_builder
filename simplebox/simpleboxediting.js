@@ -4,11 +4,15 @@ import Plugin from '@ckeditor/ckeditor5-core/src/plugin';
 import { toWidget, toWidgetEditable } from '@ckeditor/ckeditor5-widget/src/utils';
 import Widget from '@ckeditor/ckeditor5-widget/src/widget';
 
+import InsertSimpleBoxCommand from './insertsimpleboxcommand'; 
+
 export default class SimpleBoxEditing extends Plugin {
     init() {
         console.log( 'SimpleBoxEditing#init() got called' );
         this._defineSchema();       
         this._defineConverters();
+
+        this.editor.commands.add( 'insertSimpleBox', new InsertSimpleBoxCommand( this.editor ) );
     }
 
     _defineSchema() {             
