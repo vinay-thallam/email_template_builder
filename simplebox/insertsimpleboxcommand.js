@@ -25,6 +25,9 @@ function createSimpleBox( writer ) {
     const simpleBoxTitle = writer.createElement( 'simpleBoxTitle' );
     const simpleBoxDescription = writer.createElement( 'simpleBoxDescription' );
 
+    const placeholder = writer.createElement( 'placeholder', { name: 'date' } );
+
+    writer.append( placeholder, simpleBoxTitle );
     writer.append( simpleBoxTitle, simpleBox );
     writer.append( simpleBoxDescription, simpleBox );
 
