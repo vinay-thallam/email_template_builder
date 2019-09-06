@@ -24,8 +24,12 @@ export default class PlaceholderEditing extends Plugin {
             'viewToModelPosition',
             viewToModelPositionOutsideModelElement( this.editor.model, viewElement => viewElement.hasClass( 'placeholder' ) )
         );
+        
+        this.editor.config.define( 'placeholderConfig', {                           // ADDED
+            types: [ 'date', 'first name', 'surname' ]
+        } );
     }
-
+    
     _defineSchema() {
 
         //Below is the model structure we want to achieve

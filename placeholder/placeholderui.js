@@ -9,7 +9,8 @@ export default class PlaceholderUI extends Plugin {
     init() {
         const editor = this.editor;
         const t = editor.t;
-        const placeholderNames = [ 'date', 'first name', 'surname' ];
+        const placeholderNames = editor.config.get( 'placeholderConfig.types' ); 
+
 
         // The "placeholder" dropdown must be registered among the UI components of the editor
         // to be displayed in the toolbar.
