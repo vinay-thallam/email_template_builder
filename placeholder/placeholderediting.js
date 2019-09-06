@@ -5,6 +5,8 @@ import Widget from '@ckeditor/ckeditor5-widget/src/widget';
 
 import './theme/placeholder.css';
 
+import PlaceholderCommand from './placeholdercommand'; 
+
 export default class PlaceholderEditing extends Plugin {
     static get requires() {                                                    // ADDED
         return [ Widget ];
@@ -14,6 +16,9 @@ export default class PlaceholderEditing extends Plugin {
         console.log( 'PlaceholderEditing#init() got called' );
         this._defineSchema();   
         this._defineConverters();
+
+
+        this.editor.commands.add( 'placeholder', new PlaceholderCommand( this.editor ) );
     }
 
     _defineSchema() {
