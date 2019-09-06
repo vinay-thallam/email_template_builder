@@ -23,6 +23,8 @@ import { getData } from '@ckeditor/ckeditor5-engine/src/dev-utils/model';
 
 
 import SimpleBox from './simplebox/simplebox';
+import Placeholder from './placeholder/placeholder';
+
 
 class InsertImage extends Plugin {
     init() {
@@ -58,7 +60,7 @@ class InsertImage extends Plugin {
 
 ClassicEditor
     .create( document.querySelector( '#editor' ), {
-        plugins: [ Essentials, Paragraph, Bold, Italic, Image, InsertImage, ImageCaption, SimpleBox ],
+        plugins: [ Essentials, Paragraph, Bold, Italic, Image, InsertImage, ImageCaption, SimpleBox, Placeholder ],
         toolbar: [ 'bold', 'italic', 'insertImage', 'simpleBox' ]
     } )
     .then( editor => {
