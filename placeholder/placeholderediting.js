@@ -1,5 +1,8 @@
 import Plugin from '@ckeditor/ckeditor5-core/src/plugin';
 
+
+import './theme/placeholder.css';
+
 export default class PlaceholderEditing extends Plugin {
     init() {
         console.log( 'PlaceholderEditing#init() got called' );
