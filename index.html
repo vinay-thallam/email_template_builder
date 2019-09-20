@@ -25,10 +25,42 @@
                 margin-bottom: 10px;
             }
         </style>
+        <style>
+            .calendar {
+                width:125px;
+                text-align:center;
+                margin:10px auto;
+                font-weight:600;
+                border-radius:10px;
+                overflow:hidden;
+            }
+            .calendar > .cal-title {
+                line-height:29px;
+                color:#EBEBEB;
+                font-size:15px;
+                background-color:#0096FF
+            }
+            .calendar > .cal-desc {
+                color:#000;
+                background-color:#F5F5F5;
+                padding:4px
+            }
+    
+            .calendar .cal-line-one {
+                font-size:15px;
+                line-height:22px
+            }
+    
+            .calendar .cal-line-two {
+                font-size:40px;
+                line-height:44px;
+                font-weight:bold
+            }
+        </style>
     </head>
     <body>
         <div id="editor">
-            <p>Simple image:</p>
+            <!-- <p>Simple image:</p>
             
             <figure class="image">
                 <img src="https://via.placeholder.com/1000x300/02c7cd/fff?text=Placeholder%20image" alt="CKEditor 5 rocks!">
@@ -46,7 +78,7 @@
                         <li>and other block elements like headings.</li>
                     </ul>
                 </div>
-            </section>
+            </section> -->
         </div>
 
         <script src="dist/bundle.js"></script>

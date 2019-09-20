@@ -24,6 +24,7 @@ import { getData } from '@ckeditor/ckeditor5-engine/src/dev-utils/model';
 
 import SimpleBox from './simplebox/simplebox';
 import Placeholder from './placeholder/placeholder';
+import Calendar from './calendar/calendar'
 
 
 class InsertImage extends Plugin {
@@ -60,7 +61,7 @@ class InsertImage extends Plugin {
 
 ClassicEditor
     .create( document.querySelector( '#editor' ), {
-        plugins: [ Essentials, Paragraph, Bold, Italic, Image, InsertImage, ImageCaption, SimpleBox, Placeholder ],
+        plugins: [ Essentials, Paragraph, Bold, Italic, Image, InsertImage, ImageCaption, SimpleBox, Placeholder, Calendar],
         toolbar: [ 'bold', 'italic', 'insertImage', 'simpleBox', 'placeholder' ],
         placeholderConfig: {
             types: [ 'date', 'color', 'first name', 'surname' ]      
