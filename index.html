@@ -101,7 +101,7 @@
             var editor = window.CKEDITOR.replace( 'ck4', {
                 language: 'fr',
                 uiColor: '#9AB8F3',
-                extraPlugins: 'timestamp, abbr, simplebox'
+                extraPlugins: 'timestamp, abbr, simplebox',
                 // allowedContent: true,
                 // allowedContent: 'u em strong ul li;a[!href,target]',
                 // extraAllowedContent: 'dl dt dd',
@@ -120,6 +120,11 @@
         <div id="ckInline" contenteditable="true">
             <h1>Inline Editing in Action!</h1>
             <p>The "div" element that contains this text is now editable.</p>
+            <div class="simplebox">
+                    <h2 class="simplebox-title">Title</h2>
+                    <div class="simplebox-content"><p>Content...</p></div>
+                </div>
+    
         </div>
         <script>
             // Turn off automatic editor creation first.
