@@ -84,7 +84,13 @@
         <br/>
         <br/>
         <h3>CK Editor 4</h3>
-        
-        <script src="dist/bundle.js"></script>
+        <textarea name="ck4" id="ck4" rows="10" cols="80">
+            This is my textarea to be replaced with CKEditor 4.
+        </textarea>
+        <script src="/Users/vinay.thallam/learning/email_template_builder/node_modules/ckeditor/ckeditor.js"></script>
+        <!-- <script src="dist/bundle.js"></script> -->
+        <script>
+            window.CKEDITOR.replace( 'ck4' )            
+        </script>
     </body>
 </html>
