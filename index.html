@@ -83,7 +83,7 @@
         </div>
         <br/>
         <br/>
-        <h3>CK Editor 4</h3>
+        <h3>CK Editor 4 - Classic</h3>
         <textarea name="ck4" id="ck4" rows="10" cols="80">
             This is my textarea to be replaced with CKEditor 4.
         </textarea>
@@ -91,6 +91,18 @@
         <!-- <script src="dist/bundle.js"></script> -->
         <script>
             window.CKEDITOR.replace( 'ck4' )            
+        </script>
+        <br/>
+        <br/>
+        <h3>CK Editor 4 - Inline</h3>
+        <div id="ck-inline" contenteditable="true">
+            <h1>Inline Editing in Action!</h1>
+            <p>The "div" element that contains this text is now editable.</p>
+        </div>
+        <script>
+            // Turn off automatic editor creation first.
+            CKEDITOR.disableAutoInline = true;
+            CKEDITOR.inline( 'ck-inline' );
         </script>
     </body>
 </html>
