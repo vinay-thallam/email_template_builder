@@ -132,7 +132,9 @@
             CKEDITOR.disableAutoInline = true;
             CKEDITOR.inline( 'ckInline', {
 
-                extraPlugins: 'timestamp, abbr, simplebox'
+                extraPlugins: 'timestamp, abbr, simplebox',
+                extraAllowedContent: 'div(!simplebox); div(!simplebox-content); h2(!simplebox-title)'
+
             });
         </script>
     </body>
