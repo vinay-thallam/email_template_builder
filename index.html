@@ -99,7 +99,7 @@
             var editor = window.CKEDITOR.replace( 'ck4', {
                 language: 'fr',
                 uiColor: '#9AB8F3',
-                extraPlugins: 'timestamp, abbr'
+                extraPlugins: 'timestamp, abbr, simplebox'
                 // allowedContent: true,
                 // allowedContent: 'u em strong ul li;a[!href,target]',
                 // extraAllowedContent: 'dl dt dd',
@@ -124,7 +124,7 @@
             CKEDITOR.disableAutoInline = true;
             CKEDITOR.inline( 'ckInline', {
 
-                extraPlugins: 'timestamp, abbr'
+                extraPlugins: 'timestamp, abbr, simplebox'
             });
         </script>
     </body>
