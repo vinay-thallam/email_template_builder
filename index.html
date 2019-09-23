@@ -57,6 +57,8 @@
                 font-weight:bold
             }
         </style>
+
+        <link rel="stylesheet" href="/Users/vinay.thallam/learning/email_template_builder/node_modules/ckeditor/plugins/timestamp/styles/timestamp.css" />
     </head>
     <body>
         <h3>CK Editor 5</h3>
@@ -112,14 +114,17 @@
         <br/>
         <br/>
         <h3>CK Editor 4 - Inline</h3>
-        <div id="ck-inline" contenteditable="true">
+        <div id="ckInline" contenteditable="true">
             <h1>Inline Editing in Action!</h1>
             <p>The "div" element that contains this text is now editable.</p>
         </div>
         <script>
             // Turn off automatic editor creation first.
             CKEDITOR.disableAutoInline = true;
-            CKEDITOR.inline( 'ck-inline' );
+            CKEDITOR.inline( 'ckInline', {
+
+                extraPlugins: 'timestamp, abbr'
+            });
         </script>
     </body>
 </html>
