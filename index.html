@@ -91,7 +91,7 @@
         <!-- <script src="dist/bundle.js"></script> -->
         <script>
             // CKEDITOR.inline('ck4')   
-            window.CKEDITOR.replace( 'ck4', {
+            var editor = window.CKEDITOR.replace( 'ck4', {
                 language: 'fr',
                 uiColor: '#9AB8F3',
                 // allowedContent: true,
@@ -99,6 +99,12 @@
                 // extraAllowedContent: 'dl dt dd',
                 // disallowedContent: 'img{border*}'
             } )         
+            editor.on('change', function(evt){
+                console.log( 'Total bytes: ' + evt.editor.getData().length );
+            })
+            
+            //To get Data from ck editor use below
+            console.log(CKEDITOR.instances.ck4.getData())
         </script>
         <br/>
         <br/>
