@@ -10,7 +10,6 @@
     </head>
     <body>
 
-
         <h3>CK Editor 4 - Classic</h3>
         <textarea name="ck4" id="ck4" rows="10" cols="80">
             This is my textarea to be replaced with CKEditor 4.
@@ -23,7 +22,7 @@
             var editor = window.CKEDITOR.replace( 'ck4', {
                 language: 'fr',
                 uiColor: '#9AB8F3',
-                extraPlugins: 'timestamp, abbr, simplebox, placeholder',
+                extraPlugins: 'timestamp, abbr, simplebox, datadrop',
                 // allowedContent: true,
                 // allowedContent: 'u em strong ul li;a[!href,target]',
                 // extraAllowedContent: 'dl dt dd',
@@ -58,10 +57,7 @@
             // Turn off automatic editor creation first.
             CKEDITOR.disableAutoInline = true;
             CKEDITOR.inline( 'ckInline', {
-
-                extraPlugins: 'timestamp, abbr, simplebox',
-                extraAllowedContent: 'div(!simplebox); div(!simplebox-content); h2(!simplebox-title)'
-
+                extraPlugins: 'timestamp, abbr, simplebox, datadrop',
             });
         </script>
     </body>
